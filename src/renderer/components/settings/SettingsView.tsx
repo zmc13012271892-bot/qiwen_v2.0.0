@@ -5,8 +5,9 @@ import { loadSettings, saveSetting } from '../../store/slices/settingsSlice';
 import { AppSettings } from '../../../shared/types';
 import { ipc } from '../../utils/ipc';
 import { LicenseView } from './LicenseView';
+import { UserProfileView } from './UserProfileView';
 
-type SettingSection = 'appearance' | 'editor' | 'ai' | 'shortcuts' | 'data' | 'about' | 'license';
+type SettingSection = 'appearance' | 'editor' | 'ai' | 'shortcuts' | 'data' | 'about' | 'license' | 'profile';
 
 // ── UI 基础组件 ─────────────────────────────────────────────
 const Section: React.FC<{ title: string; desc?: string; children: React.ReactNode }> = ({ title, desc, children }) => (
@@ -261,6 +262,7 @@ const NAV: { id: SettingSection; label: string; icon: React.ReactNode }[] = [
   { id: 'ai', label: 'AI 设置', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> },
   { id: 'shortcuts', label: '快捷键', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/></svg> },
   { id: 'data', label: '数据管理', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg> },
+  { id: 'profile', label: '个人资料', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> },
   { id: 'about', label: '关于', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> },
   { id: 'license', label: '授权管理', icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> },
 ];
@@ -406,6 +408,8 @@ export const SettingsView: React.FC = () => {
           <div style={{ fontSize: 20, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 24 }}>授权管理</div>
           <LicenseView />
         </>}
+
+        {active === 'profile' && <UserProfileView />}
       </div>
     </div>
   );

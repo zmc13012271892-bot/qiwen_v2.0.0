@@ -43,6 +43,7 @@ import { OrgManageView } from './components/org/OrgManageView';
 import { setPlugins, syncInstalledMetadata } from './store/slices/pluginsSlice';
 import { ALL_PLUGINS } from './plugins/pluginRegistry';
 import { CommandPalette } from './components/common/CommandPalette';
+import { initSyncEngine } from './services/syncEngine';
 
 type AppStage = 'loading' | 'auth' | 'onboarding' | 'app';
 
@@ -800,12 +801,11 @@ const CloudSyncView: React.FC = React.memo(() => {
     if (!forgotEmail.trim()) { setForgotError('请输入注册邮箱'); return; }
     setForgotLoading(true); setForgotError('');
     try {
-      const res = await fetch('https://api.bitwool.cn/api/auth/forgot-password', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: forgotEmail.trim() }),
+      const { supabase } = await import('./lib/supabase');
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
+        redirectTo: 'qiwen://auth/reset-password',
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || '发送失败');
+      if (error) throw new Error(error.message);
       setForgotStep('code');
       setForgotError('');
     } catch (e: any) {
@@ -813,40 +813,22 @@ const CloudSyncView: React.FC = React.memo(() => {
     } finally { setForgotLoading(false); }
   };
 
-  // 忘记密码 - 第二步：验证6位码
+  // 忘记密码 - 第二步：Supabase 邮件链接跳转后直接到第三步，此步骤简化提示
   const handleForgotVerify = async () => {
-    if (forgotCode.length !== 6) { setForgotError('请输入6位验证码'); return; }
-    setForgotLoading(true); setForgotError('');
-    try {
-      const res = await fetch('https://api.bitwool.cn/api/auth/verify-reset-code', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: forgotEmail.trim(), code: forgotCode }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || '验证码错误');
-      setForgotStep('newpwd');
-      setForgotError('');
-    } catch (e: any) {
-      setForgotError(e.message || '验证码错误或已过期');
-    } finally { setForgotLoading(false); }
+    // Supabase 使用邮件链接重置，不需要验证码，直接跳到设置新密码
+    setForgotStep('newpwd');
   };
 
   // 忘记密码 - 第三步：设置新密码
   const handleForgotReset = async () => {
     if (!forgotNewPwd) { setForgotError('请输入新密码'); return; }
     if (forgotNewPwd.length < 8) { setForgotError('密码至少8位'); return; }
-    if (!/[A-Z]/.test(forgotNewPwd)) { setForgotError('密码需包含大写字母'); return; }
-    if (!/[a-z]/.test(forgotNewPwd)) { setForgotError('密码需包含小写字母'); return; }
-    if (!/[0-9]/.test(forgotNewPwd)) { setForgotError('密码需包含数字'); return; }
     if (forgotNewPwd !== forgotConfirmPwd) { setForgotError('两次密码不一致'); return; }
     setForgotLoading(true); setForgotError('');
     try {
-      const res = await fetch('https://api.bitwool.cn/api/auth/reset-password', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: forgotEmail.trim(), code: forgotCode, newPassword: forgotNewPwd }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || '重置失败');
+      const { supabase } = await import('./lib/supabase');
+      const { error } = await supabase.auth.updateUser({ password: forgotNewPwd });
+      if (error) throw new Error(error.message);
       setForgotStep('done');
       setForgotError('');
     } catch (e: any) {
@@ -1328,6 +1310,8 @@ const AppInner: React.FC<{ splashDone?: boolean }> = ({ splashDone }) => {
     if (splashDone && !bootDone) {
       setBootDone(true);
       handleSplashDone();
+      // 初始化云同步引擎
+      try { initSyncEngine(); } catch (e) { console.warn('[SyncEngine] init failed:', e); }
     }
   }, [splashDone, bootDone, handleSplashDone]);
 
