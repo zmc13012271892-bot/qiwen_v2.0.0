@@ -686,8 +686,9 @@ const OrgManageViewWrapper: React.FC = () => {
   const user = useSelector((s: RootState) => s.auth.user);
   const [orgId, setOrgId] = React.useState<string | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [showCreate, setShowCreate] = React.useState(false);
 
-  React.useEffect(() => {
+  const loadOrg = React.useCallback(() => {
     const isLocalMode = !user || !user.email;
     if (isLocalMode) { setLoading(false); return; }
     import('./services/cloudSync').then(({ cloudSync }) => {
@@ -697,16 +698,46 @@ const OrgManageViewWrapper: React.FC = () => {
     });
   }, [user]);
 
+  React.useEffect(() => { loadOrg(); }, [loadOrg]);
+
   if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-tertiary)', fontSize: 13 }}>加载中…</div>;
-  if (!orgId) return (
+
+  if (!user?.email) return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16 }}>
-      <div style={{ fontSize: 32 }}>🏢</div>
-      <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>还没有组织</div>
-      <div style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>请先登录并创建组织</div>
+      <div style={{ fontSize: 32 }}>🔐</div>
+      <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>请先登录</div>
+      <div style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>登录后可创建或加入组织</div>
     </div>
   );
+
+  if (!orgId) return (
+    <>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16 }}>
+        <div style={{ fontSize: 48 }}>🏢</div>
+        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>还没有组织</div>
+        <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 8 }}>创建组织来管理团队成员和协作权限</div>
+        <button onClick={() => setShowCreate(true)}
+          style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: 14, fontFamily: 'inherit', fontWeight: 500 }}>
+          创建组织
+        </button>
+      </div>
+      {showCreate && (
+        <React.Suspense fallback={null}>
+          <CreateOrgModalLazy
+            onCreated={(id) => { setOrgId(id); setShowCreate(false); }}
+            onCancel={() => setShowCreate(false)}
+          />
+        </React.Suspense>
+      )}
+    </>
+  );
+
   return <OrgManageView orgId={orgId} />;
 };
+
+const CreateOrgModalLazy = React.lazy(() =>
+  import('./components/org/CreateOrgModal').then(m => ({ default: m.CreateOrgModal }))
+);
 
 // ── 云同步视图 ──────────────────────────────────────────────
 const CloudSyncView: React.FC = React.memo(() => {
