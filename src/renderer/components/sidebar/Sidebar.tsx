@@ -61,9 +61,13 @@ const IcoPlus = () => (
 );
 
 /* ─── Nav items ────────────────────────────────────── */
+const IcoCode = () => <Ico d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />;
+const IcoOrg  = () => <Ico d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M9 7a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />;
+
 const NAV = [
   { id: 'workbench',  Icon: IcoWorkbench,  tip: 'Explorer'   },
   { id: 'library',    Icon: IcoLibrary,    tip: 'Library'    },
+  { id: 'code',       Icon: IcoCode,       tip: 'Code'       },
   { id: 'slides',     Icon: IcoSlides,     tip: 'Slides'     },
   { id: 'whiteboard', Icon: IcoWhiteboard, tip: 'Whiteboard' },
   { id: 'mindmap',    Icon: IcoMindmap,    tip: 'Mind Map'   },
@@ -72,6 +76,7 @@ const NAV = [
   { id: 'search',     Icon: IcoSearch,     tip: 'Search'     },
   { id: 'references', Icon: IcoRef,        tip: 'References' },
   { id: 'plugins',    Icon: IcoPlugins,    tip: 'Plugins'    },
+  { id: 'org',        Icon: IcoOrg,        tip: 'Organization'},
   { id: 'cloudSync',  Icon: IcoCloud,      tip: 'Cloud Sync' },
 ] as const;
 
@@ -405,6 +410,8 @@ export const Sidebar: React.FC = () => {
         {activePanel === 'workbench'  && <PanelExplorer recent={recentDocs} onOpen={openDoc} onNew={() => setShowNewDoc(true)} />}
         {activePanel === 'library'    && <PanelLibrary  docs={allDocs} onOpen={openDoc} onNew={() => setShowNewDoc(true)} />}
         {activePanel === 'search'     && <PanelSearch   wsId={activeWorkspaceId} recent={recentDocs} onOpen={openDoc} />}
+        {activePanel === 'code'       && <PanelInfo title="Code Viewer" desc="打开本地代码文件，支持 100+ 语言语法高亮，可添加行级批注和团队评论。" btnLabel="打开代码文件" onOpen={() => (dispatch as any)(setView('code'))} />}
+        {activePanel === 'org'        && <PanelInfo title="Organization" desc="管理团队成员、角色权限、邀请链接和操作审计日志。" btnLabel="打开组织管理" onOpen={() => (dispatch as any)(setView('org'))} />}
         {activePanel === 'references' && <PanelInfo title="References" desc="管理参考文献，支持 DOI / URL / BibTeX 导入，一键生成 APA / MLA / GB/T 引用格式。" btnLabel="打开文献库" onOpen={() => (dispatch as any)(setView('references'))} />}
         {activePanel === 'plugins'    && <PanelInfo title="Plugins" desc="17+ 内置插件全部离线可用，按职业自动激活，可在市场随时管理。" btnLabel="管理插件" onOpen={() => (dispatch as any)(setView('plugins'))} />}
         {activePanel === 'cloudSync'  && <PanelInfo title="Cloud Sync" desc="注册账户后可跨设备同步，TLS 加密传输，服务器不可读取内容。本地模式无需注册。" btnLabel="打开云同步" onOpen={() => (dispatch as any)(setView('cloudSync'))} />}

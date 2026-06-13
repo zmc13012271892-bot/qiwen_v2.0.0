@@ -38,6 +38,8 @@ import { WhiteboardView } from './components/canvas/WhiteboardView';
 import { MindMapView } from './components/canvas/MindMapView';
 import { WritingStatsView } from './components/stats/WritingStatsView';
 import { DocumentGraphView } from './components/stats/DocumentGraphView';
+import { CodeViewerPage } from './components/code/CodeViewerPage';
+import { OrgManageView } from './components/org/OrgManageView';
 import { setPlugins, syncInstalledMetadata } from './store/slices/pluginsSlice';
 import { ALL_PLUGINS } from './plugins/pluginRegistry';
 import { CommandPalette } from './components/common/CommandPalette';
@@ -678,6 +680,32 @@ class ErrorBoundary extends React.Component<
 
 
 
+// ── 组织管理视图包装器 ───────────────────────────────────────
+const OrgManageViewWrapper: React.FC = () => {
+  const user = useSelector((s: RootState) => s.auth.user);
+  const [orgId, setOrgId] = React.useState<string | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    if (!user || (s: any) => s.auth.isLocalMode) { setLoading(false); return; }
+    import('./services/cloudSync').then(({ cloudSync }) => {
+      cloudSync.getMyOrganizations().then(orgs => {
+        if (orgs.length > 0) setOrgId(orgs[0].id);
+      }).catch(() => {}).finally(() => setLoading(false));
+    });
+  }, [user]);
+
+  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-tertiary)', fontSize: 13 }}>加载中…</div>;
+  if (!orgId) return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16 }}>
+      <div style={{ fontSize: 32 }}>🏢</div>
+      <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>还没有组织</div>
+      <div style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>请先登录并创建组织</div>
+    </div>
+  );
+  return <OrgManageView orgId={orgId} />;
+};
+
 // ── 云同步视图 ──────────────────────────────────────────────
 const CloudSyncView: React.FC = React.memo(() => {
   const dispatch = useDispatch<AppDispatch>();
@@ -753,7 +781,7 @@ const CloudSyncView: React.FC = React.memo(() => {
     setLoginLoading(true); setLoginError('');
     try {
       if (isRegMode) {
-        await (cloudSync as any).register(regForm.email, regForm.username, regForm.password, regForm.displayName);
+        await (cloudSync as any).register(regForm.email, regForm.password, regForm.displayName, regForm.username);
       } else {
         const emailVal = (csEmailRef.current?.value || '').trim();
         const pwdVal = csPwdRef.current?.value || '';
@@ -1198,6 +1226,8 @@ const MainContent: React.FC = () => {
   if (activeView === 'templates') return <TemplatesView />;
   if (activeView === 'ai') return <AIAssistantView />;
   if (activeView === 'cloudSync') return <CloudSyncView />;
+  if (activeView === 'code') return <CodeViewerPage />;
+  if (activeView === 'org') return <OrgManageViewWrapper />;
 
   const labels: Record<string, {title: string; icon: string; desc: string}> = {
     ai:        { title: 'AI 助手',  icon: '✨', desc: 'AI 写作助手功能即将上线' },

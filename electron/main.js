@@ -665,6 +665,23 @@ function setupIPC() {
     }
   });
 
+  // 列出目录内容（文件树使用）
+  ipcMain.handle('fs:list-dir', async (_, { path: dirPath }) => {
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+      return entries.map((e) => ({
+        name: e.name,
+        path: path.join(dirPath, e.name),
+        isDir: e.isDirectory(),
+      }));
+    } catch (err) {
+      log.error('[fs:list-dir] failed:', err);
+      return [];
+    }
+  });
+
   // 打开代码文件选择对话框
   ipcMain.handle('fs:open-file-dialog', async () => {
     const result = await dialog.showOpenDialog(mainWindow, {

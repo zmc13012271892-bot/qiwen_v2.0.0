@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export type View = 'home' | 'workbench' | 'library' | 'references' | 'plugins' | 'settings' | 'ai' | 'templates' | 'cloudSync' | 'slides' | 'whiteboard' | 'mindmap' | 'stats' | 'graph';
+export type View = 'home' | 'workbench' | 'library' | 'references' | 'plugins' | 'settings' | 'ai' | 'templates' | 'cloudSync' | 'slides' | 'whiteboard' | 'mindmap' | 'stats' | 'graph' | 'code' | 'org';
 
 interface Tab {
   id: string;
