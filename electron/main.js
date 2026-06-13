@@ -653,6 +653,29 @@ function setupIPC() {
       return { success: false, error: String(err) };
     }
   });
+
+  // 读文件（代码查看器使用）
+  ipcMain.handle('fs:read-file', async (_, { path: filePath }) => {
+    try {
+      const content = require('fs').readFileSync(filePath, 'utf-8');
+      return { content };
+    } catch (err) {
+      log.error('[fs:read-file] failed:', err);
+      return { content: '', error: String(err) };
+    }
+  });
+
+  // 打开代码文件选择对话框
+  ipcMain.handle('fs:open-file-dialog', async () => {
+    const result = await dialog.showOpenDialog(mainWindow, {
+      properties: ['openFile'],
+      filters: [
+        { name: '代码文件', extensions: ['ts','tsx','js','jsx','py','go','rs','java','cpp','c','cs','rb','swift','kt','php','md','json','yaml','yml','toml','sql','sh','bash','html','css','scss','vue','svelte','xml'] },
+        { name: '所有文件', extensions: ['*'] },
+      ],
+    });
+    return result.canceled ? null : result.filePaths[0];
+  });
   ipcMain.handle('show-open-dialog', async (_, o) => dialog.showOpenDialog(mainWindow, o));
 
   // ── 图片本地上传 ───────────────────────────────────────
