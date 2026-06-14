@@ -71,9 +71,10 @@ export const loginUser = createAsyncThunk(
 
 // ── 自动恢复云端会话 ──────────────────────────────────────
 export const refreshAccessToken = createAsyncThunk('auth/refresh', async () => {
-  if (!cloudSync.isLoggedIn()) throw new Error('no session');
-  // 从 localStorage 恢复已登录用户信息
-  const saved = cloudSync.getSavedUser();
+  // 用 Supabase 获取当前会话（异步）
+  const loggedIn = await cloudSync.isLoggedIn();
+  if (!loggedIn) throw new Error('no session');
+  const saved = await cloudSync.getSavedUser();
   if (!saved) throw new Error('no session');
   return {
     accessToken: 'cloud',
