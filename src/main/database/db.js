@@ -346,6 +346,8 @@ function initDatabase() {
     seedDefaultData();
 
     log.info('[db] Database initialized successfully');
+    // ✅ 修复: 启动时清理重复工作区
+    deduplicateWorkspaces();
     return db;
   } catch (err) {
     log.error('[db] Initialization error:', err);
@@ -451,8 +453,18 @@ function updateFtsIndex(documentId, title, htmlContent, tags) {
 function rebuildFtsIndex() {
   try {
     log.info('[FTS] Rebuilding full-text index...');
-    // contentless FTS5 表不能直接 DELETE，需要用 fts5 命令
-    db.prepare("INSERT INTO documents_fts(documents_fts) VALUES('delete-all')").run();
+    // ✅ 修复: contentless FTS5 表不支持 'delete-all'，需要 drop + recreate
+    try {
+      db.prepare("INSERT INTO documents_fts(documents_fts) VALUES('delete-all')").run();
+    } catch (e) {
+      // 旧版表结构不支持 delete-all，直接 drop + recreate
+      log.info('[FTS] delete-all failed, dropping and recreating FTS table...');
+      db.prepare('DROP TABLE IF EXISTS documents_fts').run();
+      db.prepare(`CREATE VIRTUAL TABLE IF NOT EXISTS documents_fts USING fts5(
+        title, content, tags,
+        content='', tokenize='unicode61 remove_diacritics 1'
+      )`).run();
+    }
     const rows = db.prepare(`
       SELECT d.rowid, d.id, d.title, dc.content,
              GROUP_CONCAT(dt.tag, ' ') as tags_raw
@@ -472,6 +484,29 @@ function rebuildFtsIndex() {
     log.info(`[FTS] Rebuilt index for ${rows.length} documents`);
   } catch (err) {
     log.warn('[FTS] rebuildFtsIndex failed:', err?.message);
+  }
+}
+
+// ── 工作区去重（修复239个工作区问题）────────────────────────────
+function deduplicateWorkspaces() {
+  try {
+    // 找出同名工作区，保留最早创建的，删除其余
+    const dupes = db.prepare(`
+      SELECT id FROM workspaces
+      WHERE id NOT IN (
+        SELECT MIN(id) FROM workspaces GROUP BY name
+      )
+    `).all();
+    if (dupes.length > 0) {
+      const del = db.prepare('DELETE FROM workspaces WHERE id = ?');
+      const delMany = db.transaction((rows) => {
+        for (const row of rows) del.run(row.id);
+      });
+      delMany(dupes);
+      log.info('[workspaces] Removed', dupes.length, 'duplicate workspaces');
+    }
+  } catch (e) {
+    log.warn('[workspaces] deduplication failed:', e?.message);
   }
 }
 
@@ -522,7 +557,7 @@ function saveDatabase() { /* no-op: better-sqlite3 writes directly */ }
 
 module.exports = {
   initDatabase, getDb, closeDb, saveDatabase,
-  updateFtsIndex, rebuildFtsIndex,
+  updateFtsIndex, rebuildFtsIndex, deduplicateWorkspaces,
   recordCrash, trackEvent,
   isFts5Available: () => true, // better-sqlite3 always supports FTS5
 };

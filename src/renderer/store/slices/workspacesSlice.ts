@@ -37,10 +37,21 @@ const workspacesSlice = createSlice({
       .addCase(fetchWorkspaces.pending, (state) => { state.loading = true; })
       .addCase(fetchWorkspaces.fulfilled, (state, action) => {
         state.loading = false;
-        state.items = action.payload;
+        // ✅ 修复1: payload 为 null/undefined 时不覆盖，防止 .length 崩溃
+        if (!Array.isArray(action.payload)) return;
+        // ✅ 修复2: 按 id 去重，防止重复工作区堆积
+        const seen = new Set<string>();
+        state.items = action.payload.filter(w => {
+          if (!w?.id || seen.has(w.id)) return false;
+          seen.add(w.id);
+          return true;
+        });
       })
+      .addCase(fetchWorkspaces.rejected, (state) => { state.loading = false; })
       .addCase(createWorkspace.fulfilled, (state, action) => {
-        state.items.push(action.payload);
+        if (action.payload && !state.items.find(w => w.id === action.payload.id)) {
+          state.items.push(action.payload);
+        }
       })
       .addCase(deleteWorkspace.fulfilled, (state, action) => {
         state.items = state.items.filter(w => w.id !== action.payload);
