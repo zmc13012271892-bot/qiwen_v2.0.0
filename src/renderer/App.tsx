@@ -1249,8 +1249,8 @@ const MainContent: React.FC = () => {
   if (activeView === 'templates') return <TemplatesView />;
   if (activeView === 'ai') return <AIAssistantView />;
   if (activeView === 'cloudSync') return <CloudSyncView />;
-  if (activeView === 'code') return <CodeViewerPage />;
-  if (activeView === 'org') return <OrgManageViewWrapper />;
+  if (activeView === 'code') return <div style={{ flex: 1, height: '100%', overflow: 'hidden', display: 'flex' }}><CodeViewerPage /></div>;
+  if (activeView === 'org') return <div style={{ flex: 1, height: '100%', overflow: 'hidden', display: 'flex' }}><OrgManageViewWrapper /></div>;
 
   const labels: Record<string, {title: string; icon: string; desc: string}> = {
     ai:        { title: 'AI 助手',  icon: '✨', desc: 'AI 写作助手功能即将上线' },
