@@ -360,7 +360,7 @@ function subscribeToDocument(documentId: string, callbacks: {
       callbacks.onDocumentChange || (() => {}))
     .on('postgres_changes', { event: '*', schema: 'public', table: 'comments', filter: `document_id=eq.${documentId}` },
       callbacks.onCommentChange || (() => {}))
-    .on('presence', { event: 'sync' }, callbacks.onPresenceChange || (() => {}))
+    .on('broadcast', { event: 'presence_sync' }, callbacks.onPresenceChange || (() => {}))
     .subscribe();
 
   return () => { supabase.removeChannel(channel); };
