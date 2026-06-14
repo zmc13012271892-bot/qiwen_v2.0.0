@@ -7,6 +7,8 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { CodeViewer } from './CodeViewer';
+import { CodeSearch } from './CodeSearch';
+import { exportAnnotationsToMarkdown, exportAnnotationsToHTML, exportToJSON, downloadFile } from '../../utils/exportAnnotations';
 import { ipc } from '../../utils/ipc';
 
 interface FileNode {
@@ -37,6 +39,8 @@ export const CodeViewerPage: React.FC = () => {
   const [openFiles, setOpenFiles] = useState<string[]>([]); // 标签栏
   const [activeTab, setActiveTab] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [leftPanel, setLeftPanel] = useState<'tree' | 'search'>('tree');
 
   // 打开文件夹
   const openFolder = async () => {
@@ -157,6 +161,17 @@ export const CodeViewerPage: React.FC = () => {
     <div style={{ display: 'flex', height: '100%', background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
       {/* 左侧文件树 */}
       <div style={{ width: 240, flexShrink: 0, background: '#161616', borderRight: '1px solid #2a2a2a', display: 'flex', flexDirection: 'column' }}>
+        {/* 面板切换 */}
+        <div style={{ display: 'flex', background: '#1a1a1a', borderBottom: '1px solid #2a2a2a', flexShrink: 0 }}>
+          {[{ id: 'tree', label: '📁 文件' }, { id: 'search', label: '🔍 搜索' }].map(p => (
+            <button key={p.id} onClick={() => setLeftPanel(p.id as any)}
+              style={{ flex: 1, padding: '7px 0', background: 'none', border: 'none', borderBottom: `2px solid ${leftPanel === p.id ? '#c8a96e' : 'transparent'}`, color: leftPanel === p.id ? '#c8a96e' : '#666', cursor: 'pointer', fontSize: 11.5, fontFamily: 'inherit' }}>
+              {p.label}
+            </button>
+          ))}
+        </div>
+
+        {leftPanel === 'tree' && <>
         {/* 工具栏 */}
         <div style={{ padding: '10px 8px', borderBottom: '1px solid #2a2a2a', display: 'flex', gap: 6 }}>
           <button onClick={openFolder} style={{ flex: 1, padding: '5px 0', borderRadius: 6, border: '1px solid #333', background: '#1e1e1e', color: '#c8a96e', cursor: 'pointer', fontSize: 11.5, fontFamily: 'inherit' }}>
@@ -165,6 +180,33 @@ export const CodeViewerPage: React.FC = () => {
           <button onClick={openSingleFile} style={{ padding: '5px 8px', borderRadius: 6, border: '1px solid #333', background: '#1e1e1e', color: '#888', cursor: 'pointer', fontSize: 11.5, fontFamily: 'inherit' }} title="打开单个文件">
             📄
           </button>
+          {openFile && (
+            <div style={{ position: 'relative' }}>
+              <button
+                onClick={() => setShowExport(v => !v)}
+                style={{ padding: '5px 8px', borderRadius: 6, border: '1px solid #333', background: '#1e1e1e', color: '#888', cursor: 'pointer', fontSize: 11.5, fontFamily: 'inherit' }}
+                title="导出批注"
+              >
+                ↗
+              </button>
+              {showExport && (
+                <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: '#1e1e1e', border: '1px solid #333', borderRadius: 8, zIndex: 100, minWidth: 140, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
+                  {[
+                    { label: '导出为 Markdown', ext: 'md', fn: () => { const md = exportAnnotationsToMarkdown([], openFile.split(/[/\]/).pop() || ''); downloadFile(md, 'annotations.md', 'text/markdown'); }},
+                    { label: '导出为 HTML', ext: 'html', fn: () => { const html = exportAnnotationsToHTML([], openFile.split(/[/\]/).pop() || ''); downloadFile(html, 'annotations.html', 'text/html'); }},
+                    { label: '导出为 JSON', ext: 'json', fn: () => { const json = exportToJSON([], [], openFile.split(/[/\]/).pop() || ''); downloadFile(json, 'annotations.json', 'application/json'); }},
+                  ].map(item => (
+                    <button key={item.ext} onClick={() => { item.fn(); setShowExport(false); }}
+                      style={{ display: 'block', width: '100%', padding: '8px 14px', background: 'none', border: 'none', color: '#c0c0b8', cursor: 'pointer', fontSize: 12, textAlign: 'left', fontFamily: 'inherit' }}
+                      onMouseOver={e => (e.currentTarget.style.background = '#2a2a2a')}
+                      onMouseOut={e => (e.currentTarget.style.background = 'none')}>
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* 根目录标题 */}
@@ -184,6 +226,17 @@ export const CodeViewerPage: React.FC = () => {
           )}
           {!loading && tree.length > 0 && renderTree(tree)}
         </div>
+        </>}
+
+        {leftPanel === 'search' && (
+          <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+            <CodeSearch rootPath={rootPath} onOpenFile={(fp, line) => {
+              openFileInTab(fp);
+              // 跳转到指定行（Monaco 提供 revealLine 方法）
+              if (line) setTimeout(() => (window as any).__codeViewerRevealLine?.(line), 200);
+            }} />
+          </div>
+        )}
       </div>
 
       {/* 右侧编辑区 */}
