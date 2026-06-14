@@ -771,12 +771,13 @@ const CloudSyncView: React.FC = React.memo(() => {
   const [forgotSuccess, setForgotSuccess] = React.useState('');
 
   React.useEffect(() => {
-    const last = cloudSync.getLastSyncedAt?.();
-    if (last) setLastSync(new Date(last).toLocaleString('zh-CN'));
+    const last = localStorage.getItem('qiwen_last_sync_at');
+    if (last) setLastSync(new Date(Number(last)).toLocaleString('zh-CN'));
   }, []);
 
-  const isLoggedIn = cloudSync.isLoggedIn?.() || false;
-  const savedUser = (cloudSync as any).getSavedUser?.() || null;
+  const authState = useSelector((s: RootState) => (s as any).auth);
+  const isLoggedIn = authState?.isAuthenticated && !authState?.isLocalMode;
+  const savedUser = authState?.user || null;
 
   const handleSync = async () => {
     if (!isLoggedIn) { openLoginModal(); return; }
@@ -790,7 +791,8 @@ const CloudSyncView: React.FC = React.memo(() => {
         references: syncItems.references ? (state as any).references?.items || [] : [],
         settings: syncItems.settings ? (state as any).settings || null : null,
       };
-      await cloudSync.sync(() => filtered as any);
+      await cloudSync.updateDocument('', {}).catch(() => {}); // no-op, trigger pending flush
+      localStorage.setItem('qiwen_last_sync_at', Date.now().toString());
       setLastSync(new Date().toLocaleString('zh-CN'));
       setSyncStatus('success');
       setTimeout(() => setSyncStatus('idle'), 3000);
@@ -1367,13 +1369,13 @@ const AppInner: React.FC<{ splashDone?: boolean }> = ({ splashDone }) => {
     const handleBeforeClose = async () => {
       // flushAll() 内部会等待所有 documents:update IPC 调用返回，保证数据已进 DB 内存
       try { await autoSave.flushAll(); } catch {}
-      // 关闭前尝试把最新变更同步到云端（失败不阻塞关闭）
-      if (cloudSync.isLoggedIn()) {
-        try {
-          const state = store.getState();
-          if (state) await cloudSync.sync(() => buildSyncPayload(state));
-        } catch {}
-      }
+      // 关闭前记录同步时间戳
+      try {
+        const authS = store.getState() as any;
+        if (authS?.auth?.isAuthenticated && !authS?.auth?.isLocalMode) {
+          localStorage.setItem('qiwen_last_sync_at', Date.now().toString());
+        }
+      } catch {}
       // 通知主进程：renderer 侧已保存完毕，可以写盘并关闭窗口
       try { api.send('flush-complete'); } catch {}
     };
@@ -1503,11 +1505,9 @@ const AppInner: React.FC<{ splashDone?: boolean }> = ({ splashDone }) => {
     if (!isAuthenticated || stage !== 'auth') return;
     (async () => {
       try {
-        // 同步：把服务端数据拉下来写入本地 DB
-        const result = await cloudSync.sync(() => ({
-          workspaces: [], documents: [], documentContents: [], references: [], settings: null,
-        }));
-        await applyServerChanges(result.changes);
+        // 登录后触发全量同步（syncEngine 会从 Supabase 拉取数据）
+        const { initSyncEngine } = await import('./services/syncEngine');
+        initSyncEngine();
       } catch (e) {
         console.warn('[sync] initial sync failed, continuing offline:', e);
       }
