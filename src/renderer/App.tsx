@@ -700,26 +700,54 @@ const OrgManageViewWrapper: React.FC = () => {
 
   React.useEffect(() => { loadOrg(); }, [loadOrg]);
 
-  if (loading) return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-tertiary)', fontSize: 13 }}>加载中…</div>;
+  if (loading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-tertiary)', fontSize: 13 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+        <div style={{ width: 28, height: 28, borderRadius: '50%', border: '2px solid var(--border)', borderTopColor: 'var(--accent)', animation: 'spin 0.8s linear infinite' }} />
+        <span>加载中…</span>
+      </div>
+    </div>
+  );
 
   if (!user?.email) return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16 }}>
-      <div style={{ fontSize: 32 }}>🔐</div>
-      <div style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-primary)' }}>请先登录</div>
-      <div style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>登录后可创建或加入组织</div>
+    <div style={{ display: 'flex', height: '100%' }}>
+      {/* 左侧说明栏 */}
+      <div style={{ width: 280, flexShrink: 0, background: 'var(--bg-surface)', borderRight: '1px solid var(--border)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-tertiary)' }}>ORGANIZATION</div>
+        <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>管理团队成员、角色权限、邀请链接和操作审计日志。</div>
+        <button style={{ padding: '9px 0', borderRadius: 9, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'not-allowed', fontSize: 13, fontFamily: 'inherit', fontWeight: 500, opacity: 0.5 }}>打开组织管理</button>
+      </div>
+      {/* 右侧空状态 */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <div style={{ width: 72, height: 72, borderRadius: 20, background: 'var(--bg-surface2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>🔐</div>
+        <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>请先登录</div>
+        <div style={{ fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center', maxWidth: 260, lineHeight: 1.6 }}>登录后可创建组织，邀请团队成员并管理协作权限</div>
+      </div>
     </div>
   );
 
   if (!orgId) return (
     <>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16 }}>
-        <div style={{ fontSize: 48 }}>🏢</div>
-        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>还没有组织</div>
-        <div style={{ fontSize: 13, color: 'var(--text-tertiary)', marginBottom: 8 }}>创建组织来管理团队成员和协作权限</div>
-        <button onClick={() => setShowCreate(true)}
-          style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: 14, fontFamily: 'inherit', fontWeight: 500 }}>
-          创建组织
-        </button>
+      <div style={{ display: 'flex', height: '100%' }}>
+        {/* 左侧说明栏 */}
+        <div style={{ width: 280, flexShrink: 0, background: 'var(--bg-surface)', borderRight: '1px solid var(--border)', padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-tertiary)' }}>ORGANIZATION</div>
+          <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>管理团队成员、角色权限、邀请链接和操作审计日志。</div>
+          <button onClick={() => setShowCreate(true)}
+            style={{ padding: '9px 0', borderRadius: 9, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: 13, fontFamily: 'inherit', fontWeight: 500 }}>
+            创建组织
+          </button>
+        </div>
+        {/* 右侧空状态 */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+          <div style={{ width: 72, height: 72, borderRadius: 20, background: 'var(--bg-surface2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>🏢</div>
+          <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>还没有组织</div>
+          <div style={{ fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center', maxWidth: 280, lineHeight: 1.6 }}>创建一个组织来管理团队成员、分配角色权限和查看操作审计</div>
+          <button onClick={() => setShowCreate(true)}
+            style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: 14, fontFamily: 'inherit', fontWeight: 500, marginTop: 4 }}>
+            立即创建
+          </button>
+        </div>
       </div>
       {showCreate && (
         <React.Suspense fallback={null}>
