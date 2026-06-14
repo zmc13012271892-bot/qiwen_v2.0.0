@@ -192,9 +192,9 @@ export const CodeViewerPage: React.FC = () => {
               {showExport && (
                 <div style={{ position: 'absolute', top: '100%', right: 0, marginTop: 4, background: '#1e1e1e', border: '1px solid #333', borderRadius: 8, zIndex: 100, minWidth: 140, overflow: 'hidden', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
                   {[
-                    { label: '导出为 Markdown', ext: 'md', fn: () => { const md = exportAnnotationsToMarkdown([], openFile.split(/[/\]/).pop() || ''); downloadFile(md, 'annotations.md', 'text/markdown'); }},
-                    { label: '导出为 HTML', ext: 'html', fn: () => { const html = exportAnnotationsToHTML([], openFile.split(/[/\]/).pop() || ''); downloadFile(html, 'annotations.html', 'text/html'); }},
-                    { label: '导出为 JSON', ext: 'json', fn: () => { const json = exportToJSON([], [], openFile.split(/[/\]/).pop() || ''); downloadFile(json, 'annotations.json', 'application/json'); }},
+                    { label: '导出为 Markdown', ext: 'md', fn: () => { const md = exportAnnotationsToMarkdown([], openFile.split(/[\/\\]/).pop() || ''); downloadFile(md, 'annotations.md', 'text/markdown'); }},
+                    { label: '导出为 HTML', ext: 'html', fn: () => { const html = exportAnnotationsToHTML([], openFile.split(/[\/\\]/).pop() || ''); downloadFile(html, 'annotations.html', 'text/html'); }},
+                    { label: '导出为 JSON', ext: 'json', fn: () => { const json = exportToJSON([], [], openFile.split(/[\/\\]/).pop() || ''); downloadFile(json, 'annotations.json', 'application/json'); }},
                   ].map(item => (
                     <button key={item.ext} onClick={() => { item.fn(); setShowExport(false); }}
                       style={{ display: 'block', width: '100%', padding: '8px 14px', background: 'none', border: 'none', color: '#c0c0b8', cursor: 'pointer', fontSize: 12, textAlign: 'left', fontFamily: 'inherit' }}
