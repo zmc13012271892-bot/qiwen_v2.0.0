@@ -141,7 +141,7 @@ export const CodeViewerPage: React.FC = () => {
     });
 
   return (
-    <div style={{ display: 'flex', height: '100%', background: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'inherit' }}>
+    <div style={{ display: 'flex', width: '100%', height: '100%', background: 'var(--bg-base)', color: 'var(--text-primary)', fontFamily: 'inherit' }}>
 
       {/* ── 左侧面板 ── */}
       <div style={{ width: 240, flexShrink: 0, background: 'var(--bg-surface)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
