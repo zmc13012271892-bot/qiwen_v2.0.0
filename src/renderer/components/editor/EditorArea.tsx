@@ -24,6 +24,11 @@ export const EditorArea: React.FC = () => {
   const failedDocIds = useSelector((s: RootState) => s.documents.failedDocIds);
   const saving = useSelector((s: RootState) => s.documents.saving);
   const [mode, setMode] = useState<EditorMode>('edit');
+  // 协作模式：登录后默认开启，用户可手动关闭（null = 跟随默认）
+  const user = useSelector((s: RootState) => (s as any).auth?.user);
+  const isLocalMode = useSelector((s: RootState) => (s as any).auth?.isLocalMode);
+  const [collabOverride, setCollabOverride] = useState<boolean | null>(null);
+  const isCollabOn = collabOverride !== null ? collabOverride : (!!user && !isLocalMode);
 
   const activeTab = tabs.find(t => t.id === activeTabId);
   const activeDoc = activeTab ? openDocuments[activeTab.documentId] : null;
@@ -100,6 +105,7 @@ export const EditorArea: React.FC = () => {
                   <>
                     {/* 查找替换浮层 */}
                     <FindReplaceBar />
+                    <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
                     <div style={{
                       padding: '32px 64px 0',
                       maxWidth: 'calc(660px + 128px)',
@@ -112,7 +118,34 @@ export const EditorArea: React.FC = () => {
                         updatedAt={activeDoc.updatedAt}
                       />
                     </div>
-                    <MarkdownEditor documentId={activeDoc.id} />
+                    {/* 协作开关按钮（右下角，仅登录后显示） */}
+                    {user && !isLocalMode && (
+                      <div style={{ position: 'absolute', bottom: 16, right: 16, zIndex: 30 }}>
+                        <button
+                          onClick={() => setCollabOverride(v => v === null ? !isCollabOn : !v)}
+                          title={isCollabOn ? '点击关闭实时协作' : '点击开启实时协作'}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 6,
+                            padding: '5px 11px', borderRadius: 20, fontSize: 11.5,
+                            border: `1px solid ${isCollabOn ? 'rgba(82,201,122,0.35)' : 'var(--border)'}`,
+                            background: isCollabOn ? 'rgba(82,201,122,0.08)' : 'var(--bg-surface2)',
+                            color: isCollabOn ? '#52c97a' : 'var(--text-tertiary)',
+                            cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
+                          }}
+                        >
+                          <div style={{
+                            width: 6, height: 6, borderRadius: '50%',
+                            background: isCollabOn ? '#52c97a' : 'var(--text-tertiary)',
+                            animation: isCollabOn ? 'pulse 2s infinite' : 'none',
+                          }} />
+                          {isCollabOn ? '协作中' : '本地模式'}
+                        </button>
+                      </div>
+                    )}
+                    <MarkdownEditor
+                      documentId={activeDoc.id}
+                      collaborationEnabled={isCollabOn}
+                    />
                   </>
                 )}
               </motion.div>
