@@ -382,7 +382,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       } else {
         provider.updateCursor({ anchor: from, head: to });
       }
-      dispatch(updateCursor({ from, to }));
+      dispatch(updateCursor({ from, to } as any));
     },
   }, [ydoc]); // ydoc 变化时重建 editor（协作会话切换）
 
