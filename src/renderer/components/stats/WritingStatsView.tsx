@@ -41,7 +41,7 @@ const Heatmap: React.FC<{ data: DayStats[] }> = ({ data }) => {
     weeks.push(week);
   }
 
-  const maxWords = Math.max(...data.map(d => d.words), 1);
+  const maxWords = data.length > 0 ? Math.max(...data.map(d => d.words), 1) : 1;
   const getColor = (words: number) => {
     if (words === 0) return 'rgba(255,255,255,0.04)';
     const pct = words / maxWords;
@@ -97,7 +97,7 @@ const Heatmap: React.FC<{ data: DayStats[] }> = ({ data }) => {
 
 // ── Bar chart (mini) ───────────────────────────────────────
 const MiniBar: React.FC<{ data: { label: string; value: number }[]; color?: string; unit?: string }> = ({ data, color = '#c8a96e', unit = '' }) => {
-  const max = Math.max(...data.map(d => d.value), 1);
+  const max = data.length > 0 ? Math.max(...data.map(d => d.value), 1) : 1;
   return (
     <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 60 }}>
       {data.map((d, i) => (
@@ -127,7 +127,7 @@ const StatCard: React.FC<{ icon: string; label: string; value: string | number; 
 // ── Main view ──────────────────────────────────────────────
 export const WritingStatsView: React.FC = () => {
   const activeWorkspaceId = useSelector((s: RootState) => s.app.activeWorkspaceId);
-  const docs = useSelector((s: RootState) => s.documents.tree) as any[];
+  const docs = (useSelector((s: RootState) => s.documents.tree) || []) as any[];
   const [pomStats, setPomStats] = useState<PomStats | null>(null);
   const [dayStats, setDayStats] = useState<DayStats[]>([]);
   const [range, setRange] = useState<7 | 30 | 90 | 365>(30);
