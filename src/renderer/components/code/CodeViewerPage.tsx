@@ -1,5 +1,5 @@
 /**
- * CodeViewerPage.tsx — 代码查看器主页面（UI重做）
+ * CodeViewerPage.tsx — 代码查看器主页面
  */
 import React, { useState, useCallback } from 'react';
 import { CodeViewer } from './CodeViewer';
@@ -127,11 +127,12 @@ export const CodeViewerPage: React.FC = () => {
               background: isActive ? 'var(--accent-dim, rgba(200,169,110,0.1))' : 'transparent',
               borderLeft: `2px solid ${isActive ? 'var(--accent)' : 'transparent'}`,
               borderRadius: '0 6px 6px 0',
+              transition: 'background 0.1s',
             }}
             onMouseOver={e => { if (!isActive) e.currentTarget.style.background = 'var(--bg-surface2)'; }}
             onMouseOut={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
           >
-            {node.isDir && <span style={{ fontSize: 9, opacity: 0.4, width: 10, flexShrink: 0 }}>{node.expanded ? '▼' : '▶'}</span>}
+            {node.isDir && <span style={{ fontSize: 9, opacity: 0.35, width: 10, flexShrink: 0 }}>{node.expanded ? '▼' : '▶'}</span>}
             <span style={{ fontSize: 13, flexShrink: 0 }}>{node.isDir ? (node.expanded ? '📂' : '📁') : getFileIcon(node.name)}</span>
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{node.name}</span>
           </div>
@@ -147,14 +148,14 @@ export const CodeViewerPage: React.FC = () => {
       <div style={{ width: 240, flexShrink: 0, background: 'var(--bg-surface)', borderRight: '1px solid var(--border)', display: 'flex', flexDirection: 'column' }}>
 
         {/* 面板头 */}
-        <div style={{ padding: '10px 12px 0', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 8 }}>
+        <div style={{ padding: '12px 12px 0', borderBottom: '1px solid var(--border)', flexShrink: 0 }}>
+          <div style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: 10, padding: '0 2px' }}>
             CODE
           </div>
-          <div style={{ display: 'flex', gap: 2, marginBottom: 0 }}>
+          <div style={{ display: 'flex', gap: 2, marginBottom: -1 }}>
             {[{ id: 'tree', label: '文件' }, { id: 'search', label: '搜索' }].map(p => (
               <button key={p.id} onClick={() => setLeftPanel(p.id as any)} style={{
-                flex: 1, padding: '5px 0', background: 'none', border: 'none',
+                flex: 1, padding: '6px 0', background: 'none', border: 'none',
                 borderBottom: `2px solid ${leftPanel === p.id ? 'var(--accent)' : 'transparent'}`,
                 color: leftPanel === p.id ? 'var(--accent)' : 'var(--text-tertiary)',
                 cursor: 'pointer', fontSize: 12, fontFamily: 'inherit', transition: 'color 0.15s',
@@ -172,6 +173,7 @@ export const CodeViewerPage: React.FC = () => {
               flex: 1, padding: '6px 0', borderRadius: 7, border: '1px solid var(--border-md)',
               background: 'var(--bg-surface2)', color: 'var(--accent)',
               cursor: 'pointer', fontSize: 12, fontFamily: 'inherit', fontWeight: 500,
+              transition: 'background 0.15s',
             }}>
               📁 打开文件夹
             </button>
@@ -194,18 +196,19 @@ export const CodeViewerPage: React.FC = () => {
                   <div style={{
                     position: 'absolute', top: '100%', right: 0, marginTop: 4,
                     background: 'var(--bg-surface2)', border: '1px solid var(--border)',
-                    borderRadius: 8, zIndex: 100, minWidth: 150, overflow: 'hidden',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                    borderRadius: 9, zIndex: 100, minWidth: 160, overflow: 'hidden',
+                    boxShadow: '0 8px 28px rgba(0,0,0,0.35)',
                   }}>
                     {[
-                      { label: '导出为 Markdown', fn: () => { downloadFile(exportAnnotationsToMarkdown([], openFile.replace(/[\\/\\\\]/g, '/').split('/').pop() || ''), 'annotations.md', 'text/markdown'); } },
-                      { label: '导出为 HTML', fn: () => { downloadFile(exportAnnotationsToHTML([], openFile.replace(/[\\/\\\\]/g, '/').split('/').pop() || ''), 'annotations.html', 'text/html'); } },
-                      { label: '导出为 JSON', fn: () => { downloadFile(exportToJSON([], [], openFile.replace(/[\\/\\\\]/g, '/').split('/').pop() || ''), 'annotations.json', 'application/json'); } },
+                      { label: '导出为 Markdown', fn: () => { downloadFile(exportAnnotationsToMarkdown([], openFile.replace(/[\\\/\\\\]/g, '/').split('/').pop() || ''), 'annotations.md', 'text/markdown'); } },
+                      { label: '导出为 HTML', fn: () => { downloadFile(exportAnnotationsToHTML([], openFile.replace(/[\\\/\\\\]/g, '/').split('/').pop() || ''), 'annotations.html', 'text/html'); } },
+                      { label: '导出为 JSON', fn: () => { downloadFile(exportToJSON([], [], openFile.replace(/[\\\/\\\\]/g, '/').split('/').pop() || ''), 'annotations.json', 'application/json'); } },
                     ].map(item => (
                       <button key={item.label} onClick={() => { item.fn(); setShowExport(false); }} style={{
                         display: 'block', width: '100%', padding: '9px 14px', background: 'none',
                         border: 'none', color: 'var(--text-secondary)', cursor: 'pointer',
                         fontSize: 12.5, textAlign: 'left', fontFamily: 'inherit',
+                        borderBottom: '1px solid var(--border)',
                       }}
                         onMouseOver={e => (e.currentTarget.style.background = 'var(--bg-surface3)')}
                         onMouseOut={e => (e.currentTarget.style.background = 'none')}>
@@ -222,7 +225,7 @@ export const CodeViewerPage: React.FC = () => {
           {rootPath && (
             <div style={{
               padding: '5px 12px', fontSize: 10.5, color: 'var(--text-tertiary)',
-              letterSpacing: '0.5px', textTransform: 'uppercase',
+              letterSpacing: '0.5px',
               borderBottom: '1px solid var(--border)',
               overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flexShrink: 0,
             }}>
@@ -233,11 +236,11 @@ export const CodeViewerPage: React.FC = () => {
           {/* 文件树 */}
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', padding: '4px 0' }}>
             {loading && (
-              <div style={{ padding: 20, color: 'var(--text-tertiary)', fontSize: 12, textAlign: 'center' }}>扫描目录…</div>
+              <div style={{ padding: 20, color: 'var(--text-tertiary)', fontSize: 12, textAlign: 'center', opacity: 0.6 }}>扫描目录…</div>
             )}
             {!loading && !rootPath && (
-              <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 12.5, lineHeight: 2 }}>
-                <div style={{ fontSize: 28, marginBottom: 10 }}>📁</div>
+              <div style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 12.5, lineHeight: 2.2, opacity: 0.7 }}>
+                <div style={{ fontSize: 32, marginBottom: 10, opacity: 0.5 }}>📁</div>
                 点击「打开文件夹」<br />开始浏览代码
               </div>
             )}
@@ -298,10 +301,32 @@ export const CodeViewerPage: React.FC = () => {
             <CodeViewer filePath={openFile} theme="dark" />
           </div>
         ) : (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
-            <div style={{ fontSize: 52, opacity: 0.15 }}>{'</>'}</div>
-            <div style={{ fontSize: 14.5, color: 'var(--text-tertiary)', fontWeight: 500 }}>打开文件夹或文件开始查看</div>
-            <div style={{ fontSize: 12, color: 'var(--text-tertiary)', opacity: 0.6 }}>点击行号可添加批注和评论</div>
+          /* ✅ 修复：居中显示 empty state，覆盖整个右侧区域 */
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '100%',
+            height: '100%',
+            gap: 10,
+          }}>
+            <div style={{
+              fontSize: 48, opacity: 0.08,
+              fontFamily: 'monospace', fontWeight: 700,
+              letterSpacing: -2,
+            }}>{'</>'}</div>
+            <div style={{ fontSize: 14, color: 'var(--text-tertiary)', fontWeight: 500, opacity: 0.7, marginTop: 4 }}>打开文件夹或文件开始查看</div>
+            <div style={{ fontSize: 12, color: 'var(--text-tertiary)', opacity: 0.4 }}>点击行号可添加批注和评论</div>
+            <button onClick={openFolder} style={{
+              marginTop: 16, padding: '8px 20px', borderRadius: 8,
+              border: '1px solid var(--border-md)', background: 'var(--bg-surface2)',
+              color: 'var(--accent)', cursor: 'pointer', fontSize: 13,
+              fontFamily: 'inherit', fontWeight: 500,
+            }}>
+              📁 打开文件夹
+            </button>
           </div>
         )}
       </div>
