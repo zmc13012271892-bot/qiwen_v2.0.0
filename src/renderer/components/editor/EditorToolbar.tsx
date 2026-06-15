@@ -598,21 +598,6 @@ ${text}`,
         />
       )}
       {dialog === 'image' && (
-        <>
-        <Btn title="上传本地图片" onClick={async () => {
-          try {
-            const api = (window as any).electronAPI;
-            const result = await api?.invoke('image:upload-local');
-            if (result?.success && result.dataUrl) {
-              run(ed => ed.commands.setImage({ src: result.dataUrl, alt: result.fileName || '' }));
-            }
-          } catch (e) { console.error('图片上传失败:', e); }
-        }}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/>
-            <polyline points="21 15 16 10 5 21"/>
-          </svg>
-        </Btn>
         <InlineDialog title="插入图片"
           fields={[{key:'src',label:'图片地址 *',placeholder:'https://example.com/image.png'},{key:'alt',label:'替代文字（选填）',placeholder:'图片描述'},{key:'width',label:'宽度 px（选填）',placeholder:'500'}]}
           onConfirm={({src,alt,width}) => {
@@ -621,7 +606,6 @@ ${text}`,
           }}
           onCancel={() => setDialog(null)}
         />
-        </>
       )}
       {dialog === 'table' && (
         <InlineDialog title="插入表格"
@@ -828,7 +812,16 @@ ${text}`,
         {/* 插入 */}
         <ToolDropdown label="插入" minWidth={180}>
           <DItem onClick={() => setDialog('link')} shortcut="Ctrl+K">🔗 链接</DItem>
-          <DItem onClick={() => setDialog('image')}>🖼 图片</DItem>
+          <DItem onClick={() => setDialog('image')}>🖼 图片（URL）</DItem>
+          <DItem onClick={async () => {
+            try {
+              const api = (window as any).electronAPI;
+              const result = await api?.invoke('image:upload-local');
+              if (result?.success && result.dataUrl) {
+                run(ed => ed.commands.setImage({ src: result.dataUrl, alt: result.fileName || '' }));
+              }
+            } catch (e) { console.error('图片上传失败:', e); }
+          }}>📁 上传本地图片</DItem>
           <DItem onClick={() => setDialog('video')}>🎬 嵌入视频</DItem>
           <DItem onClick={() => setDialog('table')}>📊 表格</DItem>
           <DSep />
