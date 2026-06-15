@@ -755,10 +755,7 @@ const CloudSyncView: React.FC = React.memo(() => {
   const [showLogin, setShowLogin] = React.useState(false);
   const [loginModalKey, setLoginModalKey] = React.useState(0);
   const [inviteCodeMode, setInviteCodeMode] = React.useState(false);
-  // 自动更新
-  const [updateAvailable, setUpdateAvailable] = React.useState(false);
-  const [updateDownloaded, setUpdateDownloaded] = React.useState(false);
-  const [updateDismissed, setUpdateDismissed] = React.useState(false);
+
   const [inviteCode, setInviteCode] = React.useState('');
   const [inviteLoading, setInviteLoading] = React.useState(false);
   const [inviteError, setInviteError] = React.useState('');
@@ -1352,6 +1349,10 @@ const AppInner: React.FC<{ splashDone?: boolean }> = ({ splashDone }) => {
   }, [_lang]);
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, isLocalMode } = useSelector((s: RootState) => (s as any).auth);
+  // 自动更新
+  const [updateAvailable, setUpdateAvailable] = React.useState(false);
+  const [updateDownloaded, setUpdateDownloaded] = React.useState(false);
+  const [updateDismissed, setUpdateDismissed] = React.useState(false);
   const { sidebarOpen, notification } = useSelector((s: RootState) => s.app);
   const [stage, setStage] = useState<AppStage>('loading');
   const [bootDone, setBootDone] = useState(false);
