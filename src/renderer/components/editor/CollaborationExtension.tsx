@@ -32,6 +32,7 @@ export class SupabaseProvider {
   private awareness: Map<number, any> = new Map();
   private onUpdate?: (update: Uint8Array) => void;
   private onAwarenessChange?: (states: Map<number, any>) => void;
+  private onConnectionChange?: (connected: boolean) => void;
   userId: string = '';
   userName: string = '';
   userColor: string = '#c8a96e';
