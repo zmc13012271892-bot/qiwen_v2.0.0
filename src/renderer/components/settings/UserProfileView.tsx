@@ -51,7 +51,7 @@ export const UserProfileView: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 480 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 680, width: '100%' }}>
       <div style={{ fontSize: 20, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 4 }}>个人资料</div>
 
       {message && (

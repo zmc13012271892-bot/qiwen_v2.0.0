@@ -6,6 +6,7 @@ import { AppSettings } from '../../../shared/types';
 import { ipc } from '../../utils/ipc';
 import { LicenseView } from './LicenseView';
 import { UserProfileView } from './UserProfileView';
+import { OnboardingPage } from '../onboarding/OnboardingPage';
 
 type SettingSection = 'appearance' | 'editor' | 'ai' | 'shortcuts' | 'data' | 'about' | 'license' | 'profile';
 
@@ -298,7 +299,7 @@ export const SettingsView: React.FC = () => {
       </div>
 
       {/* Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '28px 36px 60px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '28px 40px 60px', minWidth: 0 }}>
 
         {active === 'appearance' && <>
           <div style={{ fontSize: 20, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 24 }}>外观</div>

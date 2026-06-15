@@ -710,7 +710,7 @@ const OrgManageViewWrapper: React.FC = () => {
   );
 
   if (!user?.email) return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%', gap: 16 }}>
       <div style={{ width: 72, height: 72, borderRadius: 20, background: 'var(--bg-surface2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>🔐</div>
       <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>请先登录</div>
       <div style={{ fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center', maxWidth: 260, lineHeight: 1.6 }}>登录后可创建组织，邀请团队成员并管理协作权限</div>
@@ -719,7 +719,7 @@ const OrgManageViewWrapper: React.FC = () => {
 
   if (!orgId) return (
     <>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', width: '100%', gap: 16 }}>
         <div style={{ width: 72, height: 72, borderRadius: 20, background: 'var(--bg-surface2)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>🏢</div>
         <div style={{ fontSize: 17, fontWeight: 600, color: 'var(--text-primary)' }}>还没有组织</div>
         <div style={{ fontSize: 13, color: 'var(--text-tertiary)', textAlign: 'center', maxWidth: 280, lineHeight: 1.6 }}>创建一个组织来管理团队成员、分配角色权限和查看操作审计</div>
@@ -1250,7 +1250,7 @@ const MainContent: React.FC = () => {
   if (activeView === 'ai') return <AIAssistantView />;
   if (activeView === 'cloudSync') return <CloudSyncView />;
   if (activeView === 'code') return <div style={{ flex: 1, height: '100%', overflow: 'hidden', display: 'flex' }}><CodeViewerPage /></div>;
-  if (activeView === 'org') return <div style={{ flex: 1, height: '100%', overflow: 'hidden', display: 'flex' }}><OrgManageViewWrapper /></div>;
+  if (activeView === 'org') return <div style={{ flex: 1, height: '100%', overflow: 'hidden', display: 'flex', width: '100%' }}><OrgManageViewWrapper /></div>;
 
   const labels: Record<string, {title: string; icon: string; desc: string}> = {
     ai:        { title: 'AI 助手',  icon: '✨', desc: 'AI 写作助手功能即将上线' },

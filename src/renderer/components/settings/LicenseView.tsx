@@ -87,7 +87,7 @@ export const LicenseView: React.FC = () => {
   const planColor = PLAN_COLORS[status.plan] || '#8a8a84';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 560 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 720, width: '100%' }}>
       {/* 当前状态卡片 */}
       <div style={{ background: 'var(--bg-surface2)', borderRadius: 12, padding: 20, border: '1px solid var(--border)', position: 'relative', overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: planColor }} />
