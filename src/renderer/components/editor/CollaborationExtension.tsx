@@ -41,11 +41,13 @@ export class SupabaseProvider {
   constructor(documentId: string, ydoc: Y.Doc, options?: {
     onUpdate?: (update: Uint8Array) => void;
     onAwarenessChange?: (states: Map<number, any>) => void;
+    onConnectionChange?: (connected: boolean) => void;
   }) {
     this.documentId = documentId;
     this.ydoc = ydoc;
     this.onUpdate = options?.onUpdate;
     this.onAwarenessChange = options?.onAwarenessChange;
+    this.onConnectionChange = options?.onConnectionChange;
     this.init();
   }
 
@@ -94,11 +96,26 @@ export class SupabaseProvider {
       .subscribe(async (status: string) => {
         if (status === 'SUBSCRIBED') {
           this.connected = true;
+          this.onConnectionChange?.(true);
           await this.channel.track({
             userId: this.userId,
             userName: this.userName,
             userColor: this.userColor,
           });
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          this.connected = false;
+          this.onConnectionChange?.(false);
+          // 5秒后自动重连
+          setTimeout(() => {
+            if (!this.connected) {
+              console.log('[Collab] Reconnecting channel...');
+              supabase.removeChannel(this.channel);
+              this.setup();
+            }
+          }, 5000);
+        } else if (status === 'CLOSED') {
+          this.connected = false;
+          this.onConnectionChange?.(false);
         }
       });
   }
@@ -198,6 +215,9 @@ export function useCollaboration(documentId: string | null, enabled: boolean) {
           .filter(Boolean);
         setOnlineUsers(users);
         setIsConnected(true);
+      },
+      onConnectionChange: (connected: boolean) => {
+        setIsConnected(connected);
       },
     });
     providerRef.current = provider;

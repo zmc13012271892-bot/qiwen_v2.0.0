@@ -484,6 +484,40 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
       {/* 主编辑区 */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%', position: 'relative' }}>
 
+        {/* 协作状态调试面板（开发模式 / process.env.NODE_ENV === 'development' 才显示） */}
+        {collaborationEnabled && process.env.NODE_ENV === 'development' && (
+          <div style={{
+            position: 'absolute', bottom: 48, left: 12, zIndex: 50,
+            background: 'rgba(10,10,14,0.92)', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 10, padding: '10px 14px', fontSize: 11,
+            fontFamily: 'monospace', color: '#e0e0e0', minWidth: 220,
+            backdropFilter: 'blur(8px)', lineHeight: 1.8,
+          }}>
+            <div style={{ fontSize: 10, color: '#c8a96e', letterSpacing: 1, marginBottom: 6, fontWeight: 600 }}>
+              ◎ COLLAB DEBUG
+            </div>
+            <div>
+              连接状态：
+              <span style={{ color: isConnected ? '#52c97a' : '#e87a7a', fontWeight: 600 }}>
+                {isConnected ? '● 已连接' : '○ 未连接'}
+              </span>
+            </div>
+            <div>在线人数：<span style={{ color: '#c8a96e' }}>{onlineUsers.length} 人</span></div>
+            <div>文档 ID：<span style={{ color: '#7ab8e8', fontSize: 10 }}>{documentId?.slice(0, 8)}…</span></div>
+            <div>Y.js Doc：<span style={{ color: ydoc ? '#52c97a' : '#e87a7a' }}>{ydoc ? '已就绪' : '未初始化'}</span></div>
+            {onlineUsers.length > 0 && (
+              <div style={{ marginTop: 4, borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 4 }}>
+                {onlineUsers.map((u, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: u.color || '#888', flexShrink: 0 }} />
+                    <span style={{ color: '#ccc', fontSize: 10 }}>{u.name || u.email || '匿名'}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* 在线协作者头像（右上角） */}
         {onlineUsers.length > 0 && (
           <div style={{ position: 'absolute', top: 8, right: showCommentPanel ? 336 : 56, zIndex: 20, display: 'flex', alignItems: 'center', gap: 8 }}>

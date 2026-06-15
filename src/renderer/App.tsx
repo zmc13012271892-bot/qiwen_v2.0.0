@@ -755,6 +755,10 @@ const CloudSyncView: React.FC = React.memo(() => {
   const [showLogin, setShowLogin] = React.useState(false);
   const [loginModalKey, setLoginModalKey] = React.useState(0);
   const [inviteCodeMode, setInviteCodeMode] = React.useState(false);
+  // 自动更新
+  const [updateAvailable, setUpdateAvailable] = React.useState(false);
+  const [updateDownloaded, setUpdateDownloaded] = React.useState(false);
+  const [updateDismissed, setUpdateDismissed] = React.useState(false);
   const [inviteCode, setInviteCode] = React.useState('');
   const [inviteLoading, setInviteLoading] = React.useState(false);
   const [inviteError, setInviteError] = React.useState('');
@@ -886,7 +890,7 @@ const CloudSyncView: React.FC = React.memo(() => {
     if (!inviteCode.trim()) return;
     setInviteLoading(true); setInviteError(''); setInviteSuccess('');
     try {
-      await (cloudSync as any).acceptInvitation(inviteCode.trim());
+      await cloudSync.acceptInvitation(inviteCode.trim());
       setInviteSuccess('✅ 已成功加入组织！同步后可在工作区列表看到共享工作区。');
       setInviteCode('');
       setTimeout(() => { setInviteCodeMode(false); setInviteSuccess(''); closeLoginModal(); }, 2500);
@@ -1427,6 +1431,21 @@ const AppInner: React.FC<{ splashDone?: boolean }> = ({ splashDone }) => {
     }
   }, [splashDone, bootDone, handleSplashDone]);
 
+  // ── 自动更新监听 ────────────────────────────────────────
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(() => {
+    const api = (window as any).electronAPI;
+    if (!api?.on) return;
+    const onAvail = () => setUpdateAvailable(true);
+    const onDone  = () => { setUpdateDownloaded(true); setUpdateAvailable(false); };
+    api.on('update-available', onAvail);
+    api.on('update-downloaded', onDone);
+    return () => {
+      api.removeListener?.('update-available', onAvail);
+      api.removeListener?.('update-downloaded', onDone);
+    };
+  }, []);
+
 
   // 配置 autoSave + 关闭前保存
   useEffect(() => {
@@ -1715,6 +1734,63 @@ const AppInner: React.FC<{ splashDone?: boolean }> = ({ splashDone }) => {
               <MainContent />
             </div>
             <StatusBar />
+
+      {/* 自动更新提示横幅 */}
+      {(updateAvailable || updateDownloaded) && !updateDismissed && (
+        <div style={{
+          position: 'fixed', bottom: 36, right: 20, zIndex: 9000,
+          width: 320, borderRadius: 14,
+          background: updateDownloaded ? 'rgba(82,201,122,0.10)' : 'rgba(91,156,246,0.10)',
+          border: `1px solid ${updateDownloaded ? 'rgba(82,201,122,0.35)' : 'rgba(91,156,246,0.35)'}`,
+          backdropFilter: 'blur(20px)',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+          overflow: 'hidden',
+          animation: 'slideInRight 0.35s cubic-bezier(0.22,1,0.36,1) both',
+        }}>
+          {/* 顶部色条 */}
+          <div style={{ height: 2, background: updateDownloaded ? '#52c97a' : '#5b9cf6' }} />
+          <div style={{ padding: '14px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 4 }}>
+                  {updateDownloaded ? '🎉 新版本已就绪' : '🔄 发现新版本'}
+                </div>
+                <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  {updateDownloaded
+                    ? '重启启文即可完成更新，获得最新功能和修复。'
+                    : '正在后台下载新版本，下载完成后会提示你重启。'
+                  }
+                </div>
+              </div>
+              <button onClick={() => setUpdateDismissed(true)} style={{
+                background: 'none', border: 'none', color: 'var(--text-tertiary)',
+                cursor: 'pointer', fontSize: 16, padding: '0 0 0 4px', lineHeight: 1, flexShrink: 0,
+              }}>×</button>
+            </div>
+            {updateDownloaded && (
+              <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                <button onClick={() => {
+                  const api = (window as any).electronAPI;
+                  api?.invoke('app:install-update').catch(() => {});
+                }} style={{
+                  flex: 1, padding: '7px', borderRadius: 8, border: 'none',
+                  background: '#52c97a', color: '#fff',
+                  fontSize: 12.5, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+                }}>
+                  立即重启并更新
+                </button>
+                <button onClick={() => setUpdateDismissed(true)} style={{
+                  padding: '7px 14px', borderRadius: 8,
+                  border: '1px solid var(--border)', background: 'transparent',
+                  color: 'var(--text-tertiary)', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit',
+                }}>
+                  稍后
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
             <Notification />
             <SearchModal />
             {/* Onboarding floating modal overlay */}

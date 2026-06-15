@@ -911,6 +911,10 @@ function setupAutoUpdater() {
     autoUpdater.on('error', (err) => {
       log.warn('[updater] error (non-fatal):', err?.message || err);
     });
+    // 渲染层触发立即安装
+    ipcMain.handle('app:install-update', () => {
+      autoUpdater.quitAndInstall(false, true);
+    });
   } catch (err) {
     log.warn('[updater] setup failed (non-fatal):', err?.message || err);
   }
