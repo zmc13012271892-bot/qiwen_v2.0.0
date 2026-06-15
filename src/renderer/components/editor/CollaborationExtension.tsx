@@ -111,7 +111,7 @@ export class SupabaseProvider {
             if (!this.connected) {
               console.log('[Collab] Reconnecting channel...');
               supabase.removeChannel(this.channel);
-              this.setup();
+              this.init();
             }
           }, 5000);
         } else if (status === 'CLOSED') {
