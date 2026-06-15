@@ -22,9 +22,6 @@ const THEMES = {
   corporate: { bg: '#1a2035', surface: '#222d45', accent: '#4488ff', text: '#e8eaf0', sub: '#8892a4', border: 'rgba(255,255,255,0.1)', card: '#2a3550' },
   nature:    { bg: '#1a2d1a', surface: '#223322', accent: '#52c97a', text: '#e0f0e0', sub: '#7a9e7a', border: 'rgba(255,255,255,0.1)', card: '#2a3f2a' },
   rose:      { bg: '#2a1520', surface: '#3d1f2a', accent: '#e87abf', text: '#f0e0e8', sub: '#a87890', border: 'rgba(255,255,255,0.1)', card: '#4a2535' },
-  vibrant: { bg: '#1a0533', surface: '#2d1055', accent: '#a78bfa', text: '#f5f3ff', sub: '#c4b5fd', border: 'rgba(167,139,250,0.25)', card: '#2d1055' },
-  ocean:   { bg: '#0a1628', surface: '#112240', accent: '#64ffda', text: '#ccd6f6', sub: '#8892b0', border: 'rgba(100,255,218,0.15)', card: '#112240' },
-  sunset:  { bg: '#1a0a00', surface: '#2d1500', accent: '#ff6b35', text: '#ffecd2', sub: '#c9a882', border: 'rgba(255,107,53,0.2)',   card: '#2d1500' },
 } as const;
 type ThemeKey = keyof typeof THEMES;
 const THEME_LABELS: Record<ThemeKey, string> = { dark:'暗黑', light:'明亮', minimal:'极简', corporate:'商务', nature:'自然', rose:'玫瑰' };
