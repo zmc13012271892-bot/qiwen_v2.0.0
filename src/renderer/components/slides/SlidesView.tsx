@@ -1036,7 +1036,7 @@ const PresentationEditor: React.FC<{ onBack: () => void }> = ({ onBack }) => {
             const t = THEMES[theme] || THEMES.dark;
             const slides = pres.slides || [];
             let slidesHtml = '';
-            slides.forEach((s, i) => {
+            slides.forEach((s: Slide, i: number) => {
               const c = s.content || {};
               let body = '';
               if (s.layout === 'title') {
