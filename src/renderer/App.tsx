@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { store, persistor } from './store';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from './store';
-import { refreshAccessToken, setLocalMode, clearAuth, loginUser, registerUser } from './store/slices/authSlice';
+import { refreshAccessToken, setLocalMode, clearAuth } from './store/slices/authSlice';
 import { loadSettings } from './store/slices/settingsSlice';
 import { fetchWorkspaces } from './store/slices/workspacesSlice';
 import { fetchDocuments, fetchDocument, createDocument, deleteDocument, updateDocument } from './store/slices/documentsSlice';
@@ -755,7 +755,14 @@ const CloudSyncView: React.FC = React.memo(() => {
   const [showLogin, setShowLogin] = React.useState(false);
   const [loginModalKey, setLoginModalKey] = React.useState(0);
   const [inviteCodeMode, setInviteCodeMode] = React.useState(false);
-
+  // 自动更新
+  const [updateAvailable, setUpdateAvailable] = React.useState(false);
+  // 邀请队友引导弹窗
+  const [showInviteGuide, setShowInviteGuide] = React.useState(false);
+  const [inviteGuideLink, setInviteGuideLink] = React.useState('');
+  const [inviteGuideLoading, setInviteGuideLoading] = React.useState(false);
+  const [updateDownloaded, setUpdateDownloaded] = React.useState(false);
+  const [updateDismissed, setUpdateDismissed] = React.useState(false);
   const [inviteCode, setInviteCode] = React.useState('');
   const [inviteLoading, setInviteLoading] = React.useState(false);
   const [inviteError, setInviteError] = React.useState('');
@@ -829,24 +836,22 @@ const CloudSyncView: React.FC = React.memo(() => {
     setLoginLoading(true); setLoginError('');
     try {
       if (isRegMode) {
-        const result = await dispatch(registerUser({
-          email: regForm.email,
-          username: regForm.username,
-          password: regForm.password,
-          displayName: regForm.displayName || regForm.username,
-        }));
-        if (registerUser.rejected.match(result)) throw new Error((result.payload as any) || result.error.message);
+        await (cloudSync as any).register(regForm.email, regForm.password, regForm.displayName, regForm.username);
       } else {
         const emailVal = (csEmailRef.current?.value || '').trim();
         const pwdVal = csPwdRef.current?.value || '';
-        const result = await dispatch(loginUser({ emailOrUsername: emailVal, password: pwdVal, rememberMe: true }));
-        if (loginUser.rejected.match(result)) throw new Error((result.payload as any) || result.error.message);
+        await (cloudSync as any).login(emailVal, pwdVal);
       }
       setShowLogin(false);
       setLoginForm({ email: '', password: '' });
       setRegForm({ email: '', username: '', password: '', displayName: '' });
     } catch (e: any) {
-      setLoginError(e?.message || '操作失败，请重试');
+      setLoginError(
+        e?.message === 'Invalid login credentials' ? '邮箱或密码错误，请检查后重试' :
+        e?.message === 'Email not confirmed' ? '邮箱未验证，请检查收件箱' :
+        e?.message === 'User already registered' ? '该邮箱已注册，请直接登录' :
+        e?.message || '操作失败，请重试'
+      );
     } finally { setLoginLoading(false); }
   };
 
@@ -1356,10 +1361,6 @@ const AppInner: React.FC<{ splashDone?: boolean }> = ({ splashDone }) => {
   }, [_lang]);
   const dispatch = useDispatch<AppDispatch>();
   const { isAuthenticated, isLocalMode } = useSelector((s: RootState) => (s as any).auth);
-  // 自动更新
-  const [updateAvailable, setUpdateAvailable] = React.useState(false);
-  const [updateDownloaded, setUpdateDownloaded] = React.useState(false);
-  const [updateDismissed, setUpdateDismissed] = React.useState(false);
   const { sidebarOpen, notification } = useSelector((s: RootState) => s.app);
   const [stage, setStage] = useState<AppStage>('loading');
   const [bootDone, setBootDone] = useState(false);
@@ -1610,6 +1611,13 @@ const AppInner: React.FC<{ splashDone?: boolean }> = ({ splashDone }) => {
     if (!isAuthenticated || stage !== 'auth') return;
     (async () => {
       try {
+        // 登录后检查是否有组织，首次登录弹邀请引导
+        try {
+          const orgs = await cloudSync.getMyOrganizations();
+          if (orgs.length === 0) {
+            setTimeout(() => setShowInviteGuide(true), 1500);
+          }
+        } catch {}
         // 登录后触发全量同步（syncEngine 会从 Supabase 拉取数据）
         const { initSyncEngine } = await import('./services/syncEngine');
         initSyncEngine();
@@ -1742,6 +1750,98 @@ const AppInner: React.FC<{ splashDone?: boolean }> = ({ splashDone }) => {
               <MainContent />
             </div>
             <StatusBar />
+
+      {/* 邀请队友引导弹窗 */}
+      {showInviteGuide && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9998,
+          background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }} onClick={() => setShowInviteGuide(false)}>
+          <div onClick={e => e.stopPropagation()} style={{
+            width: 440, borderRadius: 18, overflow: 'hidden',
+            background: 'var(--bg-surface)', border: '0.5px solid var(--border-md)',
+            boxShadow: '0 32px 80px rgba(0,0,0,0.5)',
+            animation: 'scaleIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both',
+          }}>
+            {/* 顶部色条 */}
+            <div style={{ height: 3, background: 'linear-gradient(90deg, var(--accent), #9a7040)' }} />
+            <div style={{ padding: '28px 28px 24px' }}>
+              {/* 标题 */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: 'rgba(200,169,110,0.1)', border: '1px solid rgba(200,169,110,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}>👥</div>
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 3 }}>邀请队友，一起协作</div>
+                  <div style={{ fontSize: 12.5, color: 'var(--text-tertiary)' }}>生成邀请链接，队友点击即可加入</div>
+                </div>
+              </div>
+
+              {/* 步骤说明 */}
+              {!inviteGuideLink ? (
+                <>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 22 }}>
+                    {[
+                      { n: '1', t: '生成邀请链接', d: '点击下方按钮，自动创建组织并生成邀请链接' },
+                      { n: '2', t: '发送给队友', d: '把链接发送给队友，支持微信、邮件等任何方式' },
+                      { n: '3', t: '队友点击加入', d: '队友打开启文，粘贴链接中的邀请码即可加入' },
+                    ].map(step => (
+                      <div key={step.n} style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+                        <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(200,169,110,0.12)', border: '1px solid rgba(200,169,110,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: 'var(--accent)', flexShrink: 0, marginTop: 1 }}>{step.n}</div>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 2 }}>{step.t}</div>
+                          <div style={{ fontSize: 12, color: 'var(--text-tertiary)', lineHeight: 1.6 }}>{step.d}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <button onClick={async () => {
+                    setInviteGuideLoading(true);
+                    try {
+                      // 创建默认组织
+                      let orgs = await cloudSync.getMyOrganizations();
+                      let orgId = orgs[0]?.id;
+                      if (!orgId) {
+                        const org = await cloudSync.createOrganization('我的团队', 'my-team-' + Date.now());
+                        orgId = org.id;
+                      }
+                      const token = await cloudSync.inviteMember(orgId, '', 'member');
+                      setInviteGuideLink(`https://bitwool.cn/invite/${token}`);
+                    } catch (e: any) {
+                      console.error(e);
+                    } finally { setInviteGuideLoading(false); }
+                  }} disabled={inviteGuideLoading} style={{
+                    width: '100%', padding: '12px', borderRadius: 10, border: 'none',
+                    background: 'linear-gradient(135deg, var(--accent), #9a7040)',
+                    color: '#fff', fontSize: 14, fontWeight: 600, cursor: inviteGuideLoading ? 'wait' : 'pointer',
+                    fontFamily: 'inherit', opacity: inviteGuideLoading ? 0.75 : 1,
+                  }}>
+                    {inviteGuideLoading ? '生成中…' : '🔗 生成邀请链接'}
+                  </button>
+                </>
+              ) : (
+                <div>
+                  <div style={{ background: 'var(--bg-surface2)', borderRadius: 10, padding: '14px 16px', border: '1px solid rgba(82,201,122,0.25)', marginBottom: 16 }}>
+                    <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 6, textTransform: 'uppercase' as const, letterSpacing: 0.5 }}>邀请链接（7天有效）</div>
+                    <div style={{ fontSize: 12.5, fontFamily: 'monospace', color: '#52c97a', wordBreak: 'break-all', lineHeight: 1.6 }}>{inviteGuideLink}</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <button onClick={() => { navigator.clipboard.writeText(inviteGuideLink); }} style={{ flex: 1, padding: '10px', borderRadius: 9, border: 'none', background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+                      📋 复制链接
+                    </button>
+                    <button onClick={() => setShowInviteGuide(false)} style={{ padding: '10px 16px', borderRadius: 9, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>
+                      完成
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              <button onClick={() => setShowInviteGuide(false)} style={{ marginTop: 12, width: '100%', padding: '7px', background: 'none', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 12.5, fontFamily: 'inherit' }}>
+                稍后再说，先自己用用看
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 自动更新提示横幅 */}
       {(updateAvailable || updateDownloaded) && !updateDismissed && (
