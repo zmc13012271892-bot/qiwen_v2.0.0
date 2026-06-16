@@ -9,8 +9,19 @@ const { v4: uuidv4 } = require('uuid');
 
 function registerDocumentHandlers() {
 
-  ipcMain.handle('documents:list', (_, { workspaceId, parentId = null }) => {
+  ipcMain.handle('documents:list', (_, { workspaceId, parentId = null, all = false }) => {
     const db = getDb();
+    if (all) {
+      // 返回工作区全部文档（含子文档），用于构建文件树
+      return db.prepare(`
+        SELECT d.*, GROUP_CONCAT(dt.tag) as tags_raw
+        FROM documents d
+        LEFT JOIN document_tags dt ON dt.document_id = d.id
+        WHERE d.workspace_id = ? AND d.is_archived = 0
+        GROUP BY d.id
+        ORDER BY d.is_folder DESC, d.sort_order ASC, d.updated_at DESC
+      `).all(workspaceId).map(normalizeDocument);
+    }
     return db.prepare(`
       SELECT d.*, GROUP_CONCAT(dt.tag) as tags_raw
       FROM documents d
