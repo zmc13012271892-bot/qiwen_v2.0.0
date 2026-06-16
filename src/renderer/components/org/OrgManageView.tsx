@@ -53,7 +53,12 @@ export const OrgManageView: React.FC<Props> = ({ orgId }) => {
       setMembers(mems);
       setOrgWorkspaces(wss);
     } catch (e: any) {
-      showMsg('error', e.message);
+      showMsg('error',
+        e.message?.includes('recursion') ? '权限配置错误，请联系管理员' :
+        e.message?.includes('schema cache') ? '数据库字段缺失，请联系管理员' :
+        e.message?.includes('relationship') ? '数据表关联错误，请联系管理员' :
+        e.message || '操作失败，请重试'
+      );
     } finally { setLoading(false); }
   }, [orgId]);
 
@@ -79,7 +84,12 @@ export const OrgManageView: React.FC<Props> = ({ orgId }) => {
       showMsg('success', `工作区「${ws.name}」已创建，组织成员可见`);
       await load();
     } catch (e: any) {
-      showMsg('error', e.message);
+      showMsg('error',
+        e.message?.includes('recursion') ? '权限配置错误，请联系管理员' :
+        e.message?.includes('schema cache') ? '数据库字段缺失，请联系管理员' :
+        e.message?.includes('relationship') ? '数据表关联错误，请联系管理员' :
+        e.message || '操作失败，请重试'
+      );
     } finally { setCreatingWs(false); }
   };
 
@@ -91,7 +101,12 @@ export const OrgManageView: React.FC<Props> = ({ orgId }) => {
       dispatch(fetchWorkspaces());
       showMsg('success', `已删除「${wsName}」`);
       await load();
-    } catch (e: any) { showMsg('error', e.message); }
+    } catch (e: any) { showMsg('error',
+        e.message?.includes('recursion') ? '权限配置错误，请联系管理员' :
+        e.message?.includes('schema cache') ? '数据库字段缺失，请联系管理员' :
+        e.message?.includes('relationship') ? '数据表关联错误，请联系管理员' :
+        e.message || '操作失败，请重试'
+      ); }
   };
 
   const handleInvite = async () => {
@@ -101,7 +116,12 @@ export const OrgManageView: React.FC<Props> = ({ orgId }) => {
       setInviteLink(`https://bitwool.cn/invite/${token}`);
       setInviteEmail('');
       showMsg('success', '邀请链接已生成');
-    } catch (e: any) { showMsg('error', e.message); }
+    } catch (e: any) { showMsg('error',
+        e.message?.includes('recursion') ? '权限配置错误，请联系管理员' :
+        e.message?.includes('schema cache') ? '数据库字段缺失，请联系管理员' :
+        e.message?.includes('relationship') ? '数据表关联错误，请联系管理员' :
+        e.message || '操作失败，请重试'
+      ); }
     finally { setInviting(false); }
   };
 
@@ -111,12 +131,22 @@ export const OrgManageView: React.FC<Props> = ({ orgId }) => {
       await cloudSync.removeMember(orgId, userId);
       showMsg('success', `已移除 ${name}`);
       await load();
-    } catch (e: any) { showMsg('error', e.message); }
+    } catch (e: any) { showMsg('error',
+        e.message?.includes('recursion') ? '权限配置错误，请联系管理员' :
+        e.message?.includes('schema cache') ? '数据库字段缺失，请联系管理员' :
+        e.message?.includes('relationship') ? '数据表关联错误，请联系管理员' :
+        e.message || '操作失败，请重试'
+      ); }
   };
 
   const handleRoleChange = async (userId: string, newRole: string) => {
     try { await cloudSync.updateMemberRole(orgId, userId, newRole); await load(); }
-    catch (e: any) { showMsg('error', e.message); }
+    catch (e: any) { showMsg('error',
+        e.message?.includes('recursion') ? '权限配置错误，请联系管理员' :
+        e.message?.includes('schema cache') ? '数据库字段缺失，请联系管理员' :
+        e.message?.includes('relationship') ? '数据表关联错误，请联系管理员' :
+        e.message || '操作失败，请重试'
+      ); }
   };
 
   const TABS: { id: Tab; label: string; icon: string }[] = [
