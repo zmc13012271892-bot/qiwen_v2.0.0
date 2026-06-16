@@ -6,7 +6,16 @@ const { v4: uuidv4 } = require('uuid');
 function registerWorkspaceHandlers() {
   ipcMain.handle('workspaces:list', () => {
     const db = getDb();
-    const result = db.prepare('SELECT * FROM workspaces ORDER BY created_at ASC').all();
+    const rows = db.prepare('SELECT * FROM workspaces ORDER BY created_at ASC').all();
+    // 同时返回 camelCase 字段，方便前端过滤
+    const result = rows.map(w => ({
+      ...w,
+      orgId: w.org_id || null,
+      ownerId: w.owner_id || null,
+      isShared: w.is_shared === 1 || w.is_shared === true,
+      createdAt: w.created_at,
+      updatedAt: w.updated_at,
+    }));
     log.info('[workspaces:list] returning', result.length, 'workspaces');
     return result;
   });
