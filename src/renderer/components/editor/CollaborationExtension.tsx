@@ -32,7 +32,6 @@ export class SupabaseProvider {
   private awareness: Map<number, any> = new Map();
   private onUpdate?: (update: Uint8Array) => void;
   private onAwarenessChange?: (states: Map<number, any>) => void;
-  private onConnectionChange?: (connected: boolean) => void;
   userId: string = '';
   userName: string = '';
   userColor: string = '#c8a96e';
@@ -88,16 +87,17 @@ export class SupabaseProvider {
         });
         this.onAwarenessChange?.(this.awareness);
       })
-      .on('presence', { event: 'leave' }, ({ leftPresences }) => {
-        for (const p of leftPresences as any[]) {
-          this.awareness.delete(p.clientId);
-        }
-        this.onAwarenessChange?.(this.awareness);
-      })
       .subscribe(async (status: string) => {
         if (status === 'SUBSCRIBED') {
           this.connected = true;
           this.onConnectionChange?.(true);
+          // presence 必须在 SUBSCRIBED 后注册
+          this.channel.on('presence', { event: 'leave' }, ({ leftPresences }: any) => {
+            for (const p of leftPresences as any[]) {
+              this.awareness.delete(p.clientId);
+            }
+            this.onAwarenessChange?.(this.awareness);
+          });
           await this.channel.track({
             userId: this.userId,
             userName: this.userName,
@@ -110,7 +110,8 @@ export class SupabaseProvider {
           setTimeout(() => {
             if (!this.connected) {
               console.log('[Collab] Reconnecting channel...');
-              supabase.removeChannel(this.channel);
+              try { if (this.channel) supabase.removeChannel(this.channel); } catch {}
+              this.channel = null as any;
               this.init();
             }
           }, 5000);
@@ -182,8 +183,10 @@ export class SupabaseProvider {
 
   destroy() {
     clearTimeout(this.saveTimer);
-    this.ydoc.off('update', () => {});
-    supabase.removeChannel(this.channel);
+    try { this.ydoc.off('update', () => {}); } catch {}
+    try { if (this.channel) supabase.removeChannel(this.channel); } catch {}
+    this.channel = null as any;
+    this.connected = false;
   }
 }
 

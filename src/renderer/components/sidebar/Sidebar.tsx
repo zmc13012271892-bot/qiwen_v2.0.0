@@ -166,17 +166,102 @@ const SecHead: React.FC<{ label: string; open: boolean; onToggle: () => void; on
 );
 
 /* ─── Panel: Explorer ──────────────────────────────── */
+/* ─── Doc Tree (层级文件树) ─────────────────────────── */
+const DocTreeNode: React.FC<{
+  doc: DocumentMeta;
+  docs: DocumentMeta[];
+  depth: number;
+  onOpen: (d: DocumentMeta) => void;
+  onNew?: (parentId: string) => void;
+}> = ({ doc, docs, depth, onOpen, onNew }) => {
+  const [expanded, setExpanded] = useState(true);
+  const children = docs.filter(d => d.parentId === doc.id);
+  const pl = 10 + depth * 14;
+
+  if (doc.isFolder) {
+    return (
+      <div>
+        <div onClick={() => setExpanded(v => !v)}
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: `4px 8px 4px ${pl}px`, cursor: 'pointer', fontSize: 12.5, color: 'var(--text-secondary)', borderRadius: 5, transition: 'background 0.1s' }}
+          onMouseOver={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
+          onMouseOut={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+          <span style={{ fontSize: 10, color: 'var(--text-tertiary)', width: 10, flexShrink: 0 }}>{expanded ? '▾' : '▸'}</span>
+          <span style={{ fontSize: 13, flexShrink: 0 }}>📁</span>
+          <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{doc.title || '未命名文件夹'}</span>
+          {onNew && (
+            <button onClick={e => { e.stopPropagation(); onNew(doc.id); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-tertiary)', fontSize: 14, padding: '0 2px', lineHeight: 1, flexShrink: 0, opacity: 0 }}
+              className="tree-add-btn">+</button>
+          )}
+        </div>
+        {expanded && children.map(child => (
+          <DocTreeNode key={child.id} doc={child} docs={docs} depth={depth + 1} onOpen={onOpen} onNew={onNew} />
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div onClick={() => onOpen(doc)}
+      style={{ display: 'flex', alignItems: 'center', gap: 5, padding: `4px 8px 4px ${pl}px`, cursor: 'pointer', fontSize: 12.5, color: 'var(--text-secondary)', borderRadius: 5, transition: 'background 0.1s' }}
+      onMouseOver={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
+      onMouseOut={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
+      <span style={{ width: 10, flexShrink: 0 }} />
+      <span style={{ fontSize: 12, flexShrink: 0, opacity: 0.5 }}>📄</span>
+      <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{doc.title || '无标题'}</span>
+    </div>
+  );
+};
+
+const DocTree: React.FC<{ docs: DocumentMeta[]; onOpen: (d: DocumentMeta) => void; onNew: () => void; onNewFolder?: () => void }> = ({ docs, onOpen, onNew, onNewFolder }) => {
+  const roots = docs.filter(d => !d.parentId && !d.isArchived);
+  if (roots.length === 0) return (
+    <div style={{ padding: '16px 14px', textAlign: 'center' as const }}>
+      <div style={{ fontSize: 11.5, color: 'var(--text-tertiary)', marginBottom: 8 }}>暂无文档</div>
+      <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+        <button onClick={onNew} style={{ padding: '5px 12px', borderRadius: 7, border: 'none', background: 'var(--accent)', color: '#fff', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}>📄 新建</button>
+        {onNewFolder && <button onClick={onNewFolder} style={{ padding: '5px 12px', borderRadius: 7, border: '1px solid var(--border)', background: 'transparent', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' }}>📁 文件夹</button>}
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ padding: '4px 4px' }}>
+      {roots.map(d => <DocTreeNode key={d.id} doc={d} docs={docs} depth={0} onOpen={onOpen} />)}
+    </div>
+  );
+};
+
 const PanelExplorer: React.FC<{ recent: DocumentMeta[]; onOpen: (d: DocumentMeta) => void; onNew: () => void }> = ({ recent, onOpen, onNew }) => {
   const T = useT();
-  const [open, setOpen] = useState(true);
+  const [showTree, setShowTree] = useState(true);
+  const allDocs = useSelector((s: RootState) => s.documents.tree);
+  const activeWsId = useSelector((s: RootState) => s.app.activeWorkspaceId);
+  const dispatch2 = useDispatch<AppDispatch>();
+  const handleNewFolder = async () => {
+    if (!activeWsId) return;
+    const name = window.prompt('文件夹名称：', '新文件夹');
+    if (!name?.trim()) return;
+    await (dispatch2 as any)(createDocument({ workspaceId: activeWsId, title: name.trim(), isFolder: true }));
+  };
   return (
     <div>
-      <SecHead label={T('sidebar.recentDocs')} open={open} onToggle={() => setOpen(v => !v)} onAdd={onNew} />
-      {open && (
-        recent.length > 0
-          ? recent.map(d => <DocRow key={d.id} doc={d} onClick={() => onOpen(d)} />)
-          : <div style={{ padding: '8px 22px', fontSize: 12, color: 'var(--text-tertiary)' }}>{T('sidebar.noDocs')}</div>
-      )}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '4px 8px', borderBottom: '0.5px solid var(--border)' }}>
+        <button onClick={() => setShowTree(false)}
+          style={{ flex: 1, padding: '4px 0', borderRadius: 5, border: 'none', background: !showTree ? 'var(--bg-surface3)' : 'transparent', color: !showTree ? 'var(--text-primary)' : 'var(--text-tertiary)', cursor: 'pointer', fontSize: 11, fontFamily: 'inherit' }}>
+          最近
+        </button>
+        <button onClick={() => setShowTree(true)}
+          style={{ flex: 1, padding: '4px 0', borderRadius: 5, border: 'none', background: showTree ? 'var(--bg-surface3)' : 'transparent', color: showTree ? 'var(--text-primary)' : 'var(--text-tertiary)', cursor: 'pointer', fontSize: 11, fontFamily: 'inherit' }}>
+          文件树
+        </button>
+        <button onClick={onNew} title="新建" style={{ width: 22, height: 22, borderRadius: 5, border: 'none', background: 'transparent', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>+</button>
+      </div>
+      {showTree
+        ? <DocTree docs={allDocs} onOpen={onOpen} onNew={onNew} onNewFolder={handleNewFolder} />
+        : (recent.length > 0
+            ? recent.map(d => <DocRow key={d.id} doc={d} onClick={() => onOpen(d)} />)
+            : <div style={{ padding: '8px 22px', fontSize: 12, color: 'var(--text-tertiary)' }}>{T('sidebar.noDocs')}</div>
+          )
+      }
     </div>
   );
 };
@@ -443,15 +528,15 @@ export const Sidebar: React.FC = () => {
                       background: 'rgba(200,169,110,0.07)', color: 'var(--accent)',
                       cursor: 'pointer', fontSize: 12, fontFamily: 'inherit', marginBottom: 8,
                     }}>+ 创建团队工作区</button>
-                    <div style={{ fontSize: 9.5, color: 'var(--text-tertiary)', textAlign: 'left' as const, background: 'var(--bg-surface3)', borderRadius: 6, padding: '6px 8px' }}>
-                      本地共 {allWorkspaces.length} 个工作区<br/>
-                      共享: {allWorkspaces.filter((w:any)=>w.isShared||w.is_shared).length}<br/>
-                      有org: {allWorkspaces.filter((w:any)=>w.org_id||w.orgId).length}
-                    </div>
+
                   </div>
                 ) : (
                   allWorkspaces.filter((w: any) => w.isShared || w.org_id).map((ws: any) => (
-                    <div key={ws.id} onClick={() => (dispatch as any)(setActiveWorkspace(ws.id))}
+                    <div key={ws.id} onClick={() => {
+                      (dispatch as any)(setActiveWorkspace(ws.id));
+                      (dispatch as any)(fetchDocuments({ workspaceId: ws.id }));
+                      (dispatch as any)(setView('workbench'));
+                    }}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 8, padding: '7px 8px',
                         borderRadius: 7, cursor: 'pointer', marginBottom: 2,
@@ -468,6 +553,24 @@ export const Sidebar: React.FC = () => {
                       </div>
                     </div>
                   ))
+                )}
+                {/* 激活的团队工作区文档列表 */}
+                {activeWorkspaceId && allWorkspaces.find((w:any) => w.id === activeWorkspaceId && (w.isShared||w.is_shared||w.org_id||w.orgId)) && (
+                  <div style={{ borderTop: '0.5px solid var(--border)', marginTop: 8, paddingTop: 4 }}>
+                    <div style={{ fontSize: 10, color: 'var(--text-tertiary)', padding: '4px 10px 2px', letterSpacing: 0.5, textTransform: 'uppercase' as const }}>
+                      文档
+                    </div>
+                    {recentDocs.length === 0 ? (
+                      <div style={{ padding: '8px 12px', fontSize: 12, color: 'var(--text-tertiary)' }}>暂无文档</div>
+                    ) : (
+                      recentDocs.map(d => <DocRow key={d.id} doc={d} onClick={() => openDoc(d)} />)
+                    )}
+                    <div style={{ padding: '4px 8px' }}>
+                      <button onClick={() => setShowNewDoc(true)} style={{ width: '100%', padding: '5px', borderRadius: 6, border: '1px dashed var(--border-md)', background: 'transparent', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 11.5, fontFamily: 'inherit' }}>
+                        + 新建文档
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             ) : (
