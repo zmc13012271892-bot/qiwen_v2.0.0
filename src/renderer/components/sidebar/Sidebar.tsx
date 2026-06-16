@@ -168,14 +168,14 @@ const SecHead: React.FC<{ label: string; open: boolean; onToggle: () => void; on
 /* ─── Panel: Explorer ──────────────────────────────── */
 /* ─── Doc Tree (层级文件树) ─────────────────────────── */
 const DocTreeNode: React.FC<{
-  doc: DocumentMeta;
-  docs: DocumentMeta[];
+  doc: any;
+  docs: any[];
   depth: number;
   onOpen: (d: DocumentMeta) => void;
   onNew?: (parentId: string) => void;
 }> = ({ doc, docs, depth, onOpen, onNew }) => {
   const [expanded, setExpanded] = useState(true);
-  const children = docs.filter(d => d.parentId === doc.id);
+  const children = docs.filter((d: any) => d.parentId === doc.id);
   const pl = 10 + depth * 14;
 
   if (doc.isFolder) {
@@ -212,8 +212,8 @@ const DocTreeNode: React.FC<{
   );
 };
 
-const DocTree: React.FC<{ docs: DocumentMeta[]; onOpen: (d: DocumentMeta) => void; onNew: () => void; onNewFolder?: () => void }> = ({ docs, onOpen, onNew, onNewFolder }) => {
-  const roots = docs.filter(d => !d.parentId && !d.isArchived);
+const DocTree: React.FC<{ docs: any[]; onOpen: (d: DocumentMeta) => void; onNew: () => void; onNewFolder?: () => void }> = ({ docs, onOpen, onNew, onNewFolder }) => {
+  const roots = docs.filter((d: any) => !d.parentId && !d.isArchived);
   if (roots.length === 0) return (
     <div style={{ padding: '16px 14px', textAlign: 'center' as const }}>
       <div style={{ fontSize: 11.5, color: 'var(--text-tertiary)', marginBottom: 8 }}>暂无文档</div>
