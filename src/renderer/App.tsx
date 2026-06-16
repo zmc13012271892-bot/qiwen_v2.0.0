@@ -756,13 +756,6 @@ const CloudSyncView: React.FC = React.memo(() => {
   const [loginModalKey, setLoginModalKey] = React.useState(0);
   const [inviteCodeMode, setInviteCodeMode] = React.useState(false);
   // 自动更新
-  const [updateAvailable, setUpdateAvailable] = React.useState(false);
-  // 邀请队友引导弹窗
-  const [showInviteGuide, setShowInviteGuide] = React.useState(false);
-  const [inviteGuideLink, setInviteGuideLink] = React.useState('');
-  const [inviteGuideLoading, setInviteGuideLoading] = React.useState(false);
-  const [updateDownloaded, setUpdateDownloaded] = React.useState(false);
-  const [updateDismissed, setUpdateDismissed] = React.useState(false);
   const [inviteCode, setInviteCode] = React.useState('');
   const [inviteLoading, setInviteLoading] = React.useState(false);
   const [inviteError, setInviteError] = React.useState('');
@@ -1360,6 +1353,13 @@ const AppInner: React.FC<{ splashDone?: boolean }> = ({ splashDone }) => {
     document.documentElement.lang = _lang;
   }, [_lang]);
   const dispatch = useDispatch<AppDispatch>();
+  const [updateAvailable, setUpdateAvailable] = React.useState(false);
+  const [inviteGuideLink, setInviteGuideLink] = React.useState('');
+  const [inviteGuideLoading, setInviteGuideLoading] = React.useState(false);
+  const [updateDownloaded, setUpdateDownloaded] = React.useState(false);
+  const [updateDismissed, setUpdateDismissed] = React.useState(false);
+  // 邀请队友引导弹窗
+  const [showInviteGuide, setShowInviteGuide] = React.useState(false);
   const { isAuthenticated, isLocalMode } = useSelector((s: RootState) => (s as any).auth);
   const { sidebarOpen, notification } = useSelector((s: RootState) => s.app);
   const [stage, setStage] = useState<AppStage>('loading');
