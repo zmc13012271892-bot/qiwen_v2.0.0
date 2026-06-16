@@ -172,8 +172,9 @@ const DocTreeNode: React.FC<{
   doc: any;
   docs: any[];
   depth: number;
-  onOpen: (d: DocumentMeta) => void;
+  onOpen: (d: any) => void;
   onNew?: (parentId: string) => void;
+  onCtxMenu?: (e: React.MouseEvent, doc: any) => void;
 }> = ({ doc, docs, depth, onOpen, onNew, onCtxMenu }) => {
   const [expanded, setExpanded] = useState(true);
   const children = docs.filter((d: any) => d.parentId === doc.id);
@@ -214,7 +215,7 @@ const DocTreeNode: React.FC<{
   );
 };
 
-const DocTree: React.FC<{ docs: any[]; onOpen: (d: DocumentMeta) => void; onNew: () => void; onNewFolder?: () => void }> = ({ docs, onOpen, onNew, onNewFolder }) => {
+const DocTree: React.FC<{ docs: any[]; onOpen: (d: any) => void; onNew: () => void; onNewFolder?: () => void; onCtxMenu?: (e: React.MouseEvent, doc: any) => void }> = ({ docs, onOpen, onNew, onNewFolder, onCtxMenu }) => {
   const roots = docs.filter((d: any) => !d.parentId && !d.isArchived);
   if (roots.length === 0) return (
     <div style={{ padding: '16px 14px', textAlign: 'center' as const }}>
