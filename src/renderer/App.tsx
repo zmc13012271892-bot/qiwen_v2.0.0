@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { store, persistor } from './store';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from './store';
-import { refreshAccessToken, setLocalMode, clearAuth } from './store/slices/authSlice';
+import { refreshAccessToken, setLocalMode, clearAuth, loginUser, registerUser } from './store/slices/authSlice';
 import { loadSettings } from './store/slices/settingsSlice';
 import { fetchWorkspaces } from './store/slices/workspacesSlice';
 import { fetchDocuments, fetchDocument, createDocument, deleteDocument, updateDocument } from './store/slices/documentsSlice';
@@ -829,20 +829,32 @@ const CloudSyncView: React.FC = React.memo(() => {
     setLoginLoading(true); setLoginError('');
     try {
       if (isRegMode) {
-        await (cloudSync as any).register(regForm.email, regForm.password, regForm.displayName, regForm.username);
+        const result = await dispatch(registerUser({
+          email: regForm.email,
+          username: regForm.username,
+          password: regForm.password,
+          displayName: regForm.displayName || regForm.username,
+        }));
+        if (registerUser.rejected.match(result)) {
+          throw new Error((result.error?.message) || '注册失败');
+        }
       } else {
         const emailVal = (csEmailRef.current?.value || '').trim();
         const pwdVal = csPwdRef.current?.value || '';
-        await (cloudSync as any).login(emailVal, pwdVal);
+        const result = await dispatch(loginUser({ emailOrUsername: emailVal, password: pwdVal, rememberMe: true }));
+        if (loginUser.rejected.match(result)) {
+          throw new Error((result.error?.message) || '登录失败');
+        }
       }
       setShowLogin(false);
       setLoginForm({ email: '', password: '' });
       setRegForm({ email: '', username: '', password: '', displayName: '' });
     } catch (e: any) {
       setLoginError(
-        e?.message === 'Invalid login credentials' ? '邮箱或密码错误，请检查后重试' :
-        e?.message === 'Email not confirmed' ? '邮箱未验证，请检查收件箱' :
-        e?.message === 'User already registered' ? '该邮箱已注册，请直接登录' :
+        e?.message?.includes('Invalid login credentials') ? '邮箱或密码错误，请检查后重试' :
+        e?.message?.includes('Email not confirmed') ? '邮箱未验证，请检查收件箱' :
+        e?.message?.includes('User already registered') ? '该邮箱已注册，请直接登录' :
+        e?.message?.includes('Database error') ? '账号创建失败，请稍后重试' :
         e?.message || '操作失败，请重试'
       );
     } finally { setLoginLoading(false); }
