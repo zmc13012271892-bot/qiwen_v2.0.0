@@ -512,7 +512,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
                 {onlineUsers.map((u, i) => (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                     <div style={{ width: 6, height: 6, borderRadius: '50%', background: u.color || '#888', flexShrink: 0 }} />
-                    <span style={{ color: '#ccc', fontSize: 10 }}>{u.name || u.email || '匿名'}</span>
+                    <span style={{ color: '#ccc', fontSize: 10 }}>{u.name || '匿名'}</span>
                   </div>
                 ))}
               </div>
