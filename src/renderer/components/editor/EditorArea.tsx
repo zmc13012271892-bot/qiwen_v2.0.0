@@ -139,18 +139,18 @@ export const EditorArea: React.FC = () => {
                     <div style={{ position: 'absolute', bottom: 16, right: 20, zIndex: 30, display: 'flex', gap: 8, alignItems: 'center' }}>
                       {/* Typewriter 模式 */}
                       <button onClick={() => setTypewriterMode(v => !v)} title="Typewriter 模式（当前行居中）"
-                        style={{ padding: '4px 9px', borderRadius: 16, border: `1px solid ${typewriterMode ? 'rgba(91,156,246,0.4)' : 'var(--border)'}`, background: typewriterMode ? 'rgba(91,156,246,0.08)' : 'var(--bg-surface2)', color: typewriterMode ? '#5b9cf6' : 'var(--text-tertiary)', cursor: 'pointer', fontSize: 11, fontFamily: 'inherit', transition: 'all 0.15s' }}>
+                        style={{ padding: '4px 9px', borderRadius: 16, border: `1px solid ${typewriterMode ? 'rgba(91,156,246,0.4)' : 'var(--border)'}`, background: typewriterMode ? 'rgba(91,156,246,0.08)' : 'var(--bg-surface2)', color: typewriterMode ? '#5b9cf6' : 'var(--text-tertiary)', cursor: 'pointer', fontSize: 11, fontFamily: 'inherit', transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)' }}>
                         ⌨ 打字机
                       </button>
                       {/* 专注模式 */}
                       <button onClick={() => dispatch(toggleFocusMode())} title="专注模式 (F11)"
-                        style={{ padding: '4px 9px', borderRadius: 16, border: `1px solid ${focusMode ? 'rgba(200,169,110,0.4)' : 'var(--border)'}`, background: focusMode ? 'rgba(200,169,110,0.08)' : 'var(--bg-surface2)', color: focusMode ? 'var(--accent)' : 'var(--text-tertiary)', cursor: 'pointer', fontSize: 11, fontFamily: 'inherit', transition: 'all 0.15s' }}>
+                        style={{ padding: '4px 9px', borderRadius: 16, border: `1px solid ${focusMode ? 'rgba(200,169,110,0.4)' : 'var(--border)'}`, background: focusMode ? 'rgba(200,169,110,0.08)' : 'var(--bg-surface2)', color: focusMode ? 'var(--accent)' : 'var(--text-tertiary)', cursor: 'pointer', fontSize: 11, fontFamily: 'inherit', transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)' }}>
                         ◎ 专注
                       </button>
                       {/* 协作开关 */}
                       {user && !isLocalMode && (
                         <button onClick={() => setCollabOverride(v => v === null ? !isCollabOn : !v)} title={isCollabOn ? '点击关闭实时协作' : '点击开启实时协作'}
-                          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 16, fontSize: 11, border: `1px solid ${isCollabOn ? 'rgba(82,201,122,0.35)' : 'var(--border)'}`, background: isCollabOn ? 'rgba(82,201,122,0.08)' : 'var(--bg-surface2)', color: isCollabOn ? '#52c97a' : 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s' }}>
+                          style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 16, fontSize: 11, border: `1px solid ${isCollabOn ? 'rgba(82,201,122,0.35)' : 'var(--border)'}`, background: isCollabOn ? 'rgba(82,201,122,0.08)' : 'var(--bg-surface2)', color: isCollabOn ? '#52c97a' : 'var(--text-tertiary)', cursor: 'pointer', fontFamily: 'inherit', transition: 'background var(--dur-base) var(--ease-smooth), border-color var(--dur-base) var(--ease-smooth), color var(--dur-base) var(--ease-smooth)' }}>
                           <div style={{ width: 6, height: 6, borderRadius: '50%', background: isCollabOn ? '#52c97a' : 'var(--text-tertiary)', animation: isCollabOn ? 'pulse 2s infinite' : 'none' }} />
                           {isCollabOn ? '协作中' : '本地模式'}
                         </button>
@@ -169,7 +169,7 @@ export const EditorArea: React.FC = () => {
                             border: `1px solid ${isCollabOn ? 'rgba(82,201,122,0.35)' : 'var(--border)'}`,
                             background: isCollabOn ? 'rgba(82,201,122,0.08)' : 'var(--bg-surface2)',
                             color: isCollabOn ? '#52c97a' : 'var(--text-tertiary)',
-                            cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.2s',
+                            cursor: 'pointer', fontFamily: 'inherit', transition: 'background var(--dur-base) var(--ease-smooth), color var(--dur-base) var(--ease-smooth)',
                           }}
                         >
                           <div style={{

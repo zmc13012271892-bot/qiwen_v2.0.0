@@ -245,7 +245,7 @@ export const OrgManageView: React.FC<Props> = ({ orgId }) => {
                   background: creatingWs||!newWsName.trim() ? 'var(--bg-surface3)' : 'var(--accent)',
                   color: creatingWs||!newWsName.trim() ? 'var(--text-tertiary)' : '#fff',
                   cursor: creatingWs||!newWsName.trim() ? 'not-allowed' : 'pointer',
-                  fontSize:13, fontWeight:600, fontFamily:'inherit', whiteSpace:'nowrap' as const, transition:'all 0.15s',
+                  fontSize:13, fontWeight:600, fontFamily:'inherit', whiteSpace:'nowrap' as const, transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)',
                 }}>
                   {creatingWs ? '创建中…' : '+ 创建'}
                 </button>
@@ -342,7 +342,7 @@ export const OrgManageView: React.FC<Props> = ({ orgId }) => {
                       background: inviteRole===role ? `${ROLE_COLORS[role]}12` : 'var(--bg-surface3)',
                       color: inviteRole===role ? ROLE_COLORS[role] : 'var(--text-secondary)',
                       cursor:'pointer', fontSize:12.5, fontFamily:'inherit',
-                      fontWeight: inviteRole===role ? 600 : 400, transition:'all 0.15s',
+                      fontWeight: inviteRole===role ? 600 : 400, transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)',
                     }}>{ROLE_LABELS[role]}</button>
                   ))}
                 </div>

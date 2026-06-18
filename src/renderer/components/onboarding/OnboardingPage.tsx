@@ -120,7 +120,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ onComplete }) =>
           height: 6, borderRadius: 3,
           width: i === step ? 22 : 6,
           background: i <= step ? C.gold : 'rgba(0,0,0,0.1)',
-          transition: 'all 0.35s cubic-bezier(0.22,1,0.36,1)',
+          transition: 'background var(--dur-slow) var(--ease-out-expo), transform var(--dur-slow) var(--ease-out-expo)',
         }} />
       ))}
     </div>
@@ -193,7 +193,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ onComplete }) =>
                 padding: '14px 10px', borderRadius: 12, cursor: 'pointer', textAlign: 'center',
                 border: active ? `1.5px solid ${C.borderActive}` : `1px solid ${C.border}`,
                 background: active ? C.goldBgActive : C.surface,
-                transition: 'all 0.18s ease',
+                transition: 'background var(--dur-base) var(--ease-smooth), transform var(--dur-base) var(--ease-smooth)',
                 boxShadow: active ? '0 4px 16px rgba(180,130,60,0.12)' : '0 1px 4px rgba(0,0,0,0.04)',
               }}
             >
@@ -364,7 +364,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ onComplete }) =>
               border: `1px solid ${C.border}`,
               background: C.btnSecondary, color: C.textSub,
               fontSize: 13, fontFamily: 'inherit', fontWeight: 500,
-              transition: 'all .15s',
+              transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)',
             }}
           >← 上一步</button>
         )}
@@ -398,7 +398,7 @@ export const OnboardingPage: React.FC<OnboardingPageProps> = ({ onComplete }) =>
               border: 'none', fontFamily: 'inherit',
               boxShadow: loading ? 'none' : '0 4px 16px rgba(180,130,60,0.3)',
               display: 'flex', alignItems: 'center', gap: 8,
-              transition: 'all .2s',
+              transition: 'background var(--dur-base) var(--ease-smooth), border-color var(--dur-base) var(--ease-smooth), color var(--dur-base) var(--ease-smooth)',
             }}
           >
             {loading ? (

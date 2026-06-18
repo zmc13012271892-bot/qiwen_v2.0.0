@@ -186,22 +186,21 @@ const DocTreeNode: React.FC<{
         <div onClick={() => setExpanded(v => !v)}
           onContextMenu={e => { e.preventDefault(); onCtxMenu?.(e, doc); }}
           draggable
-          onDragStart={e => { e.dataTransfer.setData('doc-id', doc.id); e.dataTransfer.setData('doc-type', 'folder'); (e.currentTarget as HTMLElement).style.opacity='0.5'; }}
-          onDragEnd={e => { (e.currentTarget as HTMLElement).style.opacity='1'; }}
-          onDragOver={e => { e.preventDefault(); (e.currentTarget as HTMLElement).style.background='rgba(200,169,110,0.1)'; }}
-          onDragLeave={e => { (e.currentTarget as HTMLElement).style.background='transparent'; }}
+          className="tree-node"
+          onDragStart={e => { e.dataTransfer.setData('doc-id', doc.id); e.dataTransfer.setData('doc-type', 'folder'); (e.currentTarget as HTMLElement).classList.add('dragging'); }}
+          onDragEnd={e => { (e.currentTarget as HTMLElement).classList.remove('dragging'); }}
+          onDragOver={e => { e.preventDefault(); (e.currentTarget as HTMLElement).classList.add('drag-over'); }}
+          onDragLeave={e => { (e.currentTarget as HTMLElement).classList.remove('drag-over'); }}
           onDrop={async e => {
-            e.preventDefault(); (e.currentTarget as HTMLElement).style.background='transparent';
+            e.preventDefault(); (e.currentTarget as HTMLElement).classList.remove('drag-over');
             const dragId = e.dataTransfer.getData('doc-id');
             if (dragId && dragId !== doc.id) {
               await ipc.invoke('documents:move', { id: dragId, parentId: doc.id });
               onCtxMenu && onCtxMenu({ ...(e as any), type: 'refresh' } as any, doc);
             }
           }}
-          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: `4px 8px 4px ${pl}px`, cursor: 'grab', fontSize: 12.5, color: 'var(--text-secondary)', borderRadius: 5, transition: 'background 0.1s' }}
-          onMouseOver={e => (e.currentTarget as HTMLElement).style.background = 'var(--bg-hover)'}
-          onMouseOut={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}>
-          <span style={{ fontSize: 10, color: 'var(--text-tertiary)', width: 10, flexShrink: 0 }}>{expanded ? '▾' : '▸'}</span>
+          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: `4px 8px 4px ${pl}px`, cursor: 'grab', fontSize: 12.5, color: 'var(--text-secondary)', borderRadius: 5 }}>
+          <span className={`tree-caret ${expanded ? 'expanded' : ''}`} style={{ fontSize: 10, color: 'var(--text-tertiary)', width: 10, flexShrink: 0 }}>▸</span>
           <span style={{ fontSize: 13, flexShrink: 0 }}>📁</span>
           <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const }}>{doc.title || '未命名文件夹'}</span>
           {onNew && (
@@ -210,9 +209,13 @@ const DocTreeNode: React.FC<{
               className="tree-add-btn">+</button>
           )}
         </div>
-        {expanded && children.map(child => (
-          <DocTreeNode key={child.id} doc={child} docs={docs} depth={depth + 1} onOpen={onOpen} onNew={onNew} onCtxMenu={onCtxMenu} />
-        ))}
+        {expanded && (
+          <div className="tree-children">
+            {children.map(child => (
+              <DocTreeNode key={child.id} doc={child} docs={docs} depth={depth + 1} onOpen={onOpen} onNew={onNew} onCtxMenu={onCtxMenu} />
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -241,8 +244,10 @@ const DocTree: React.FC<{ docs: any[]; onOpen: (d: any) => void; onNew: () => vo
   );
   return (
     <div style={{ padding: '4px 4px' }}
-      onDragOver={e => e.preventDefault()}
+      onDragOver={e => { e.preventDefault(); (e.currentTarget as HTMLElement).classList.add('drag-over'); }}
+      onDragLeave={e => { (e.currentTarget as HTMLElement).classList.remove('drag-over'); }}
       onDrop={async e => {
+        (e.currentTarget as HTMLElement).classList.remove('drag-over');
         const dragId = e.dataTransfer.getData('doc-id');
         if (dragId) await ipc.invoke('documents:move', { id: dragId, parentId: null });
       }}>
@@ -355,7 +360,7 @@ const PanelExplorer: React.FC<{ recent: DocumentMeta[]; onOpen: (d: DocumentMeta
       {/* 右键菜单 */}
       {ctxMenu && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999 }} onClick={() => setCtxMenu(null)}>
-          <div style={{
+          <div className="context-menu-enter" style={{
             position: 'fixed', left: ctxMenu.x, top: ctxMenu.y,
             background: 'var(--bg-surface2)', border: '0.5px solid var(--border-md)',
             borderRadius: 10, padding: '4px 0', minWidth: 160,
@@ -393,7 +398,7 @@ const PanelExplorer: React.FC<{ recent: DocumentMeta[]; onOpen: (d: DocumentMeta
               </div>
             )}
             {/* 重命名 */}
-            <div onClick={() => {
+            <div className="context-menu-item" onClick={() => {
               setInlineInput({ parentId: ctxMenu.doc.parentId || undefined, type: ctxMenu.doc.isFolder ? 'folder' : 'doc' });
               setInlineName(ctxMenu.doc.title || '');
               setRenameId(ctxMenu.doc.id);
@@ -433,8 +438,8 @@ const PanelExplorer: React.FC<{ recent: DocumentMeta[]; onOpen: (d: DocumentMeta
 
       {/* 内联输入框（新建文档/文件夹到指定父节点）*/}
       {inlineInput && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.3)' }} onClick={() => setInlineInput(null)}>
-          <div style={{ position: 'fixed', left: '50%', top: '40%', transform: 'translate(-50%,-50%)', background: 'var(--bg-surface)', border: '1px solid var(--border-md)', borderRadius: 12, padding: '18px 20px', minWidth: 280, boxShadow: '0 16px 48px rgba(0,0,0,0.4)' }}
+        <div className="modal-overlay-enter" style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.3)' }} onClick={() => setInlineInput(null)}>
+          <div className="modal-enter-centered" style={{ position: 'fixed', left: '50%', top: '40%', background: 'var(--bg-surface)', border: '1px solid var(--border-md)', borderRadius: 12, padding: '18px 20px', minWidth: 280, boxShadow: '0 16px 48px rgba(0,0,0,0.4)' }}
             onClick={e => e.stopPropagation()}>
             <div style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', marginBottom: 10 }}>
               {renameId ? '✏️ 重命名' : inlineInput.type === 'folder' ? '📁 新建文件夹' : '📄 新建文档'}
@@ -637,7 +642,7 @@ export const Sidebar: React.FC = () => {
           <div key={id} style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}>
             {active && <div style={{ position: 'absolute', left: 0, top: '50%', transform: 'translateY(-50%)', width: 2.5, height: 18, background: 'var(--accent)', borderRadius: '0 2px 2px 0' }} />}
             <button onClick={() => handleNav(id)} title={tip}
-              style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: active ? 'rgba(200,169,110,0.1)' : 'transparent', borderRadius: 7, cursor: 'pointer', color: active ? 'var(--accent)' : 'var(--text-tertiary)', transition: 'all 0.15s' }}
+              style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: active ? 'rgba(200,169,110,0.1)' : 'transparent', borderRadius: 7, cursor: 'pointer', color: active ? 'var(--accent)' : 'var(--text-tertiary)', transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)' }}
               onMouseOver={e => { if (!active) { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'var(--bg-hover)'; }}}
               onMouseOut={e => { if (!active) { e.currentTarget.style.color = 'var(--text-tertiary)'; e.currentTarget.style.background = 'transparent'; }}}>
               <Icon />
@@ -650,7 +655,7 @@ export const Sidebar: React.FC = () => {
 
       {/* Settings btn */}
       <button onClick={() => { setActivePanel('settings'); setPanelOpen(false); (dispatch as any)(setView('settings')); }} title="Settings"
-        style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: 'transparent', borderRadius: 7, cursor: 'pointer', color: 'var(--text-tertiary)', transition: 'all 0.15s' }}
+        style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', background: 'transparent', borderRadius: 7, cursor: 'pointer', color: 'var(--text-tertiary)', transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)' }}
         onMouseOver={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'var(--bg-hover)'; }}
         onMouseOut={e => { e.currentTarget.style.color = 'var(--text-tertiary)'; e.currentTarget.style.background = 'transparent'; }}>
         <IcoSettings />
@@ -695,7 +700,7 @@ export const Sidebar: React.FC = () => {
                     background: wsTab === tab ? 'var(--bg-surface3)' : 'transparent',
                     color: wsTab === tab ? 'var(--text-primary)' : 'var(--text-tertiary)',
                     cursor: 'pointer', fontSize: 11.5, fontFamily: 'inherit', fontWeight: wsTab === tab ? 600 : 400,
-                    transition: 'all 0.15s',
+                    transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)',
                   }}>
                     {tab === 'mine' ? '👤 个人' : '👥 团队'}
                   </button>
@@ -782,7 +787,7 @@ export const Sidebar: React.FC = () => {
       {showFooterNew && (
         <div style={{ padding: '8px 10px', borderTop: '0.5px solid var(--border)', flexShrink: 0 }}>
           <button onClick={() => setShowNewDoc(true)}
-            style={{ width: '100%', height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, border: '0.5px dashed var(--border-md)', borderRadius: 7, background: 'transparent', cursor: 'pointer', fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'inherit', transition: 'all 0.15s' }}
+            style={{ width: '100%', height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, border: '0.5px dashed var(--border-md)', borderRadius: 7, background: 'transparent', cursor: 'pointer', fontSize: 12, color: 'var(--text-tertiary)', fontFamily: 'inherit', transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)' }}
             onMouseOver={e => { e.currentTarget.style.background = 'rgba(200,169,110,0.06)'; e.currentTarget.style.borderColor = 'rgba(200,169,110,0.3)'; e.currentTarget.style.color = 'var(--accent)'; }}
             onMouseOut={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'var(--border-md)'; e.currentTarget.style.color = 'var(--text-tertiary)'; }}>
             <IcoPlus />新建文档

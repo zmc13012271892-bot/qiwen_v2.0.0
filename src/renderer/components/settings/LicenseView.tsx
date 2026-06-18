@@ -148,7 +148,7 @@ export const LicenseView: React.FC = () => {
       {status.plan === 'free' && (
         <div style={{ marginBottom: 24 }}>
           {!showKey ? (
-            <button onClick={() => setShowKey(true)} style={{ width: '100%', padding: '11px', borderRadius: 10, border: '1px dashed rgba(200,169,110,.3)', background: 'rgba(200,169,110,.03)', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 13, fontFamily: 'inherit', transition: 'all .15s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+            <button onClick={() => setShowKey(true)} style={{ width: '100%', padding: '11px', borderRadius: 10, border: '1px dashed rgba(200,169,110,.3)', background: 'rgba(200,169,110,.03)', color: 'var(--text-tertiary)', cursor: 'pointer', fontSize: 13, fontFamily: 'inherit', transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
               onMouseOver={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(200,169,110,.55)'; (e.currentTarget as HTMLElement).style.color = 'var(--accent)'; }}
               onMouseOut={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(200,169,110,.3)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-tertiary)'; }}>
               🔑 已有 License Key？点击激活

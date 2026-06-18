@@ -55,7 +55,7 @@ const CreateBtn: React.FC<CreateBtnProps> = ({ icon, label, desc, accent, onClic
         border: `0.5px solid ${accent
           ? (hovered ? 'rgba(200,169,110,0.55)' : 'rgba(200,169,110,0.3)')
           : (hovered ? 'rgba(255,255,255,0.12)' : 'var(--border)')}`,
-        cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
+        cursor: 'pointer', textAlign: 'left', transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)',
         transform: hovered ? 'translateY(-1px)' : 'none',
         boxShadow: hovered ? '0 6px 20px rgba(0,0,0,0.2)' : 'none',
       }}
@@ -87,7 +87,7 @@ const RecentRow: React.FC<{ doc: any; onClick: () => void }> = ({ doc, onClick }
         padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
         background: hovered ? 'var(--bg-surface2)' : 'transparent',
         border: `0.5px solid ${hovered ? 'var(--border)' : 'transparent'}`,
-        textAlign: 'left', transition: 'all 0.12s', fontFamily: 'inherit',
+        textAlign: 'left', transition: 'background var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)', fontFamily: 'inherit',
       }}
     >
       <div style={{
@@ -317,7 +317,7 @@ export const HomeView: React.FC = React.memo(() => {
                 )}
                 {docs.filter(d => !d.isFolder).length > 8 && (
                   <button onClick={() => dispatch(setView('library'))}
-                    style={{ marginTop: 8, padding: '8px 14px', background: 'transparent', border: '0.5px solid var(--border)', borderRadius: 8, color: 'var(--text-tertiary)', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.12s' }}
+                    style={{ marginTop: 8, padding: '8px 14px', background: 'transparent', border: '0.5px solid var(--border)', borderRadius: 8, color: 'var(--text-tertiary)', fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', transition: 'background var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)' }}
                     onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor='rgba(200,169,110,0.35)'; (e.currentTarget as HTMLElement).style.color='var(--accent)'; }}
                     onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor='var(--border)'; (e.currentTarget as HTMLElement).style.color='var(--text-tertiary)'; }}
                   >查看全部文档库 →</button>
@@ -346,7 +346,7 @@ export const HomeView: React.FC = React.memo(() => {
                 { d: 'M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z', label: '云同步', view: 'cloudSync' as const },
               ].map(({ d, label, view }) => (
                 <button key={view} onClick={() => dispatch(setView(view))}
-                  style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', padding: '8px 12px', borderRadius: 8, cursor: 'pointer', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: 13, fontFamily: 'inherit', textAlign: 'left' as const, transition: 'all 0.12s' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 9, width: '100%', padding: '8px 12px', borderRadius: 8, cursor: 'pointer', background: 'transparent', border: 'none', color: 'var(--text-secondary)', fontSize: 13, fontFamily: 'inherit', textAlign: 'left' as const, transition: 'background var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background='var(--bg-surface2)'; (e.currentTarget as HTMLElement).style.color='var(--text-primary)'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background='transparent'; (e.currentTarget as HTMLElement).style.color='var(--text-secondary)'; }}
                 ><Ico d={d} size={14} />{label}</button>

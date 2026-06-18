@@ -319,7 +319,7 @@ const LibraryView: React.FC = React.memo(() => {
     return (
       <div
         onClick={() => !isRenaming && handleOpen(doc)}
-        style={{ padding: '14px 16px', background: 'var(--bg-surface2)', border: `0.5px solid ${doc.isPinned ? 'rgba(200,169,110,0.3)' : 'var(--border)'}`, borderRadius: 10, cursor: isRenaming ? 'default' : 'pointer', position: 'relative' as const, transition: 'all 0.15s' }}
+        style={{ padding: '14px 16px', background: 'var(--bg-surface2)', border: `0.5px solid ${doc.isPinned ? 'rgba(200,169,110,0.3)' : 'var(--border)'}`, borderRadius: 10, cursor: isRenaming ? 'default' : 'pointer', position: 'relative' as const, transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)' }}
         onMouseOver={e => { if (!isRenaming) { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(200,169,110,0.35)'; el.style.background = 'var(--bg-surface3)'; }}}
         onMouseOut={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = doc.isPinned ? 'rgba(200,169,110,0.3)' : 'var(--border)'; el.style.background = 'var(--bg-surface2)'; }}
       >
@@ -471,8 +471,8 @@ const LibraryView: React.FC = React.memo(() => {
 
       {/* 新建文档弹窗 */}
       {showNewDoc && (
-        <div onClick={() => setShowNewDoc(false)} style={{ position: 'fixed', inset: 0, zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
-          <div onClick={e => e.stopPropagation()} style={{ width: 340, background: 'var(--bg-surface2)', border: '0.5px solid var(--border-md)', borderRadius: 12, padding: 20, boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
+        <div className="modal-overlay-enter" onClick={() => setShowNewDoc(false)} style={{ position: 'fixed', inset: 0, zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(4px)' }}>
+          <div className="modal-enter" onClick={e => e.stopPropagation()} style={{ width: 340, background: 'var(--bg-surface2)', border: '0.5px solid var(--border-md)', borderRadius: 12, padding: 20, boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
             <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 12 }}>新建文档</div>
             <input ref={newDocRef} autoFocus value={newDocTitle} onChange={e => setNewDocTitle(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') handleCreate(); if (e.key === 'Escape') { setShowNewDoc(false); setNewDocTitle(''); }}}
@@ -934,7 +934,7 @@ const CloudSyncView: React.FC = React.memo(() => {
   const Toggle: React.FC<{ on: boolean; onChange: () => void }> = ({ on, onChange }) => (
     <div onClick={onChange} style={{ width: 36, height: 20, borderRadius: 10, cursor: 'pointer', flexShrink: 0,
       background: on ? 'linear-gradient(135deg,#c8a96e,#9a7040)' : 'var(--bg-surface3)',
-      border: `0.5px solid ${on ? 'transparent' : 'var(--border-md)'}`, position: 'relative', transition: 'all .2s' }}>
+      border: `0.5px solid ${on ? 'transparent' : 'var(--border-md)'}`, position: 'relative', transition: 'background var(--dur-base) var(--ease-smooth), border-color var(--dur-base) var(--ease-smooth), color var(--dur-base) var(--ease-smooth)' }}>
       <div style={{ position: 'absolute', top: 2, left: on ? 18 : 2, width: 16, height: 16,
         borderRadius: '50%', background: '#fff', transition: 'left .2s', boxShadow: '0 1px 4px rgba(0,0,0,.3)' }} />
     </div>
@@ -1030,7 +1030,7 @@ const CloudSyncView: React.FC = React.memo(() => {
           background: syncStatus === 'success' ? 'rgba(72,199,142,.15)' : syncStatus === 'error' ? 'rgba(255,100,100,.12)' : 'linear-gradient(135deg,#c8a96e,#9a7040)',
           color: syncStatus === 'success' ? '#48c78e' : syncStatus === 'error' ? '#ff6464' : '#fff',
           fontSize:14.5, fontWeight:600, cursor: syncStatus === 'syncing' ? 'not-allowed' : 'pointer',
-          fontFamily:'inherit', opacity: syncStatus === 'syncing' ? .7 : 1, transition:'all .3s',
+          fontFamily:'inherit', opacity: syncStatus === 'syncing' ? .7 : 1, transition: 'background var(--dur-slow) var(--ease-smooth), opacity var(--dur-slow) var(--ease-smooth)',
           display:'flex', alignItems:'center', justifyContent:'center', gap:8 }}>
           {syncStatus === 'idle' && <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/><line x1="12" y1="13" x2="12" y2="17"/><polyline points="9 16 12 13 15 16"/></svg>{isLoggedIn ? '立即同步' : '登录并同步'}</>}
           {syncStatus === 'syncing' && '同步中...'}
@@ -1051,9 +1051,9 @@ const CloudSyncView: React.FC = React.memo(() => {
       {/* 登录/注册/忘记密码弹窗 */}
       {showLogin && (
         <>
-          <div onClick={closeLoginModal} style={{ position:'fixed', inset:0, zIndex:999, background:'rgba(0,0,0,.55)', backdropFilter:'blur(10px)' }} />
-          <div style={{
-            position:'fixed', top:'50%', left:'50%', transform:'translate(-50%,-50%)',
+          <div className="modal-overlay-enter" onClick={closeLoginModal} style={{ position:'fixed', inset:0, zIndex:999, background:'rgba(0,0,0,.55)', backdropFilter:'blur(10px)' }} />
+          <div className="modal-enter-centered" style={{
+            position:'fixed', top:'50%', left:'50%',
             zIndex:1000, width:420, borderRadius:20,
             background:'var(--bg-surface)', border:'0.5px solid var(--border-md)',
             boxShadow:'0 24px 64px rgba(0,0,0,.4)', overflow:'hidden',

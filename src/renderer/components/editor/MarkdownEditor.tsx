@@ -98,7 +98,7 @@ const FloatingToolbar: React.FC<{ editor: any }> = ({ editor }) => {
     background: active ? 'rgba(200,169,110,0.25)' : 'transparent',
     color: active ? '#c8a96e' : '#e8e6e0',
     cursor: 'pointer', fontSize: 13, fontWeight: active ? 600 : 400,
-    transition: 'all 0.1s', display: 'flex', alignItems: 'center',
+    transition: 'background var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)', display: 'flex', alignItems: 'center',
     justifyContent: 'center', minWidth: 28, height: 28,
   });
   const sep = { width: 0.5, height: 18, background: 'rgba(255,255,255,0.15)', margin: '0 2px' } as React.CSSProperties;
@@ -586,7 +586,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
               border: `1px solid ${copilotToggle ? 'rgba(200,169,110,0.3)' : 'var(--border)'}`,
               background: copilotToggle ? 'rgba(200,169,110,0.08)' : 'var(--bg-surface2)',
               color: copilotToggle ? 'var(--accent)' : 'var(--text-tertiary)',
-              cursor: 'pointer', fontSize: 11, fontFamily: 'inherit', transition: 'all 0.15s', whiteSpace: 'nowrap',
+              cursor: 'pointer', fontSize: 11, fontFamily: 'inherit', transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)', whiteSpace: 'nowrap',
             }}>
             🤖 AI {copilotToggle ? '已开' : '已关'}
           </button>
@@ -600,7 +600,7 @@ export const MarkdownEditor: React.FC<MarkdownEditorProps> = ({
               border: `1px solid ${showCommentPanel ? 'var(--accent)' : 'var(--border)'}`,
               background: showCommentPanel ? 'rgba(200,169,110,0.15)' : 'var(--bg-surface2)',
               color: showCommentPanel ? 'var(--accent)' : 'var(--text-tertiary)',
-              cursor: 'pointer', fontSize: 12.5, fontFamily: 'inherit', transition: 'all 0.15s',
+              cursor: 'pointer', fontSize: 12.5, fontFamily: 'inherit', transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)',
             }}
           >
             💬

@@ -110,7 +110,7 @@ const ToolDropdown: React.FC<{
           background: open ? 'var(--bg-surface3)' : active ? 'rgba(200,169,110,0.1)' : 'var(--bg-surface3)',
           color: active ? '#c8a96e' : 'var(--text-secondary)', cursor:'pointer',
           display:'flex', alignItems:'center', gap:5, fontSize:12.5,
-          fontFamily:'inherit', flexShrink:0, transition:'all 0.1s',
+          fontFamily:'inherit', flexShrink:0, transition: 'background var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth)',
         }}
       >
         {label}
@@ -899,7 +899,7 @@ ${text}`,
               padding:'3px 10px', borderRadius:6, fontSize:12, border:'none', cursor:'pointer',
               background:mode===m.k?'var(--bg-surface)':'transparent',
               color:mode===m.k?'var(--text-primary)':'var(--text-tertiary)',
-              transition:'all 0.15s', fontFamily:'inherit',
+              transition: 'background var(--dur-fast) var(--ease-smooth), border-color var(--dur-fast) var(--ease-smooth), color var(--dur-fast) var(--ease-smooth)', fontFamily:'inherit',
               boxShadow:mode===m.k?'0 1px 4px rgba(0,0,0,0.3)':'none',
             }}>{m.l}</button>
           ))}
